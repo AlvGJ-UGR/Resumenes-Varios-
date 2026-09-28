@@ -9,12 +9,19 @@ Este documento contiene un resumen completo, estructurado e ilustrativo del cont
 
 ### 1. Impulso Unitario $\delta(n - n_0)$
 * **Definición matemática:**
-  $$\delta(n - n_0) = \begin{cases} 1 & \text{si } n = n_0 \\ 0 & \text{si } n \neq n_0 \end{cases}$$
+
+$$
+\delta(n - n_0) = \begin{cases} 1 & \text{si } n = n_0 \\ 
+0 & \text{si } n \neq n_0 \end{cases}
+$$
+  
 * **Visualización en MATLAB:** 
   * `stem(n, x)`: Representación propia de señales en tiempo discreto (puntos sobre tallos).
   * `plot(n, x)`: Conecta puntos de forma continua (no refleja la naturaleza discreta).
 * **Tren de impulsos periódico:**
-  $$S(n) = \sum_{l=0}^{M-1} A \cdot \delta(n - l P)$$
+  $$
+  S(n) = \sum_{l=0}^{M-1} A \cdot \delta(n - l P)
+  $$
   * *Vectorización en MATLAB:* Evita bucles `for` usando indexado por pasos: `s(1:P:M*P) = A`.
 
 ### 2. Señales Sinusoidales Discretas
