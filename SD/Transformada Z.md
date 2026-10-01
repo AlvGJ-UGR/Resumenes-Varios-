@@ -39,7 +39,8 @@ $$
 y seguramente has visto la **Transformada de Fourier de tiempo discreto (DTFT)**:
 
 $$
-X(e^{j\omega})=
+X(e^{j\omega})
+=
 \sum_{n=-\infty}^{\infty}
 x[n]e^{-j\omega n}
 $$
@@ -114,12 +115,14 @@ donde:
 Entonces:
 
 $$
-z^{-n}=
+z^{-n}
+=
 (re^{j\omega})^{-n}
 $$
 
 $$
-=r^{-n}e^{-j\omega n}
+=
+r^{-n}e^{-j\omega n}
 $$
 
 Por tanto:
@@ -164,8 +167,8 @@ $$
 entonces:
 
 $$
-X(e^{j\omega})=
-
+X(e^{j\omega})
+=
 \sum_{n=-\infty}^{\infty}
 x[n]e^{-j\omega n}
 $$
@@ -176,8 +179,8 @@ Por tanto:
 
 $$
 \boxed{
-\text{DTFT}=
-
+\text{DTFT}
+=
 \text{Transformada Z evaluada en }z=e^{j\omega}
 }
 $$
@@ -298,8 +301,8 @@ Por eso:
 
 $$
 \boxed{
-X(e^{j\omega})=
-
+X(e^{j\omega})
+=
 X(z)\big|_{z=e^{j\omega}}
 }
 $$
@@ -429,7 +432,8 @@ $$
 Esto es una serie geométrica:
 
 $$
-\sum_{n=0}^{\infty}r^n =
+\sum_{n=0}^{\infty}r^n
+=
 \frac{1}{1-r}
 $$
 
@@ -459,7 +463,8 @@ Así:
 
 $$
 \boxed{
-Z\{a^nu[n]\} =
+Z\{a^nu[n]\}
+=
 \frac{1}{1-az^{-1}},
 \qquad
 ROC:\ |z|>|a|
@@ -783,7 +788,8 @@ $$
 Podemos combinar:
 
 $$
-a^ne^{j\omega_0n}=
+a^ne^{j\omega_0n}
+=
 (ae^{j\omega_0})^n
 $$
 
@@ -841,7 +847,8 @@ $$
 Utilizamos Euler:
 
 $$
-\cos(\omega_0n)=
+\cos(\omega_0n)
+=
 \frac12
 \left(
 e^{j\omega_0n}
@@ -904,10 +911,11 @@ $$
 utilizamos:
 
 $$
-\sin(\omega_0n)=
+\sin(\omega_0n)
+=
 \frac{
-e^{j\omega_0n}-
-
+e^{j\omega_0n}
+-
 e^{-j\omega_0n}
 }{2j}
 $$
@@ -988,7 +996,8 @@ Por tanto:
 
 $$
 \boxed{
-Z\{ax_1[n]+bx_2[n]\}=
+Z\{ax_1[n]+bx_2[n]\}
+=
 aX_1(z)+bX_2(z)
 }
 $$
@@ -1206,8 +1215,8 @@ Y(z)=
 $$
 
 $$
-
-= \sum_nx[n]
+=
+\sum_nx[n]
 \left(\frac{z}{a}\right)^{-n}
 $$
 
@@ -1275,8 +1284,8 @@ Otra propiedad importante:
 
 $$
 \boxed{
-Z\{nx[n]\}=
-
+Z\{nx[n]\}
+=
 -z\frac{dX(z)}{dz}
 }
 $$
@@ -1304,7 +1313,8 @@ obtenemos:
 
 $$
 \boxed{
-Z\{na^nu[n]\}=
+Z\{na^nu[n]\}
+=
 \frac{az^{-1}}
 {(1-az^{-1})^2}
 }
@@ -1325,7 +1335,8 @@ $$
 Para una señal bilateral, utilizando la propiedad de desplazamiento:
 
 $$
-Y(z)=
+Y(z)
+=
 X(z)-z^{-1}X(z)
 $$
 
@@ -1404,8 +1415,8 @@ Bajo las condiciones apropiadas:
 
 $$
 \boxed{
-x[0]=
-
+x[0]
+=
 \lim_{z\rightarrow\infty}X(z)
 }
 $$
@@ -1451,8 +1462,8 @@ Para determinadas señales y bajo las condiciones de estabilidad necesarias:
 
 $$
 \boxed{
-\lim_{n\rightarrow\infty}x[n]=
-
+\lim_{n\rightarrow\infty}x[n]
+=
 \lim_{z\rightarrow1}(1-z^{-1})X(z)
 }
 $$
@@ -1585,7 +1596,8 @@ $$
 está asociado a términos del tipo:
 
 $$
-p^n=
+p^n
+=
 r^ne^{j\omega n}
 $$
 
@@ -1898,7 +1910,8 @@ Formalmente:
 
 $$
 \boxed{
-x[n]=
+x[n]
+=
 \frac{1}{2\pi j}
 \oint_C
 X(z)z^{n-1}\,dz
@@ -2145,7 +2158,8 @@ Por tanto:
 
 $$
 X(z)=
-\frac{8/3}{1-0.5z^{-1}}-
+\frac{8/3}{1-0.5z^{-1}}
+-
 \frac{5/3}{1-0.8z^{-1}}
 $$
 
@@ -2160,7 +2174,8 @@ ambos términos son causales:
 $$
 \boxed{
 x[n]=
-\frac83(0.5)^nu[n]-
+\frac83(0.5)^nu[n]
+-
 \frac53(0.8)^nu[n]
 }
 $$
@@ -2243,7 +2258,8 @@ $$
 Sabemos que:
 
 $$
-Z\{na^nu[n]\}=
+Z\{na^nu[n]\}
+=
 \frac{az^{-1}}
 {(1-az^{-1})^2}
 $$
@@ -2369,7 +2385,8 @@ Por tanto:
 $$
 \boxed{
 H(z)=
-\frac{Y(z)}{X(z)}=
+\frac{Y(z)}{X(z)}
+=
 \frac1{1-az^{-1}}
 }
 $$
@@ -2486,7 +2503,8 @@ podemos obtener:
 
 $$
 \boxed{
-H(e^{j\omega})=
+H(e^{j\omega})
+=
 H(z)|_{z=e^{j\omega}}
 }
 $$
@@ -2537,7 +2555,8 @@ La Transformada Z unilateral o de un solo lado se define como:
 
 $$
 \boxed{
-X^+(z)=
+X^+(z)
+=
 \sum_{n=0}^{\infty}
 x[n]z^{-n}
 }
@@ -2644,7 +2663,8 @@ entonces:
 
 $$
 \boxed{
-Z^+\{x[n-1]\}=
+Z^+\{x[n-1]\}
+=
 z^{-1}X^+(z)+x[-1]
 }
 $$
@@ -2654,7 +2674,8 @@ Observa la diferencia con la bilateral.
 En la bilateral:
 
 $$
-Z\{x[n-1]\}=
+Z\{x[n-1]\}
+=
 z^{-1}X(z)
 $$
 
@@ -2671,7 +2692,8 @@ $$
 Partimos de:
 
 $$
-Z^+\{x[n-1]\}=
+Z^+\{x[n-1]\}
+=
 \sum_{n=0}^{\infty}
 x[n-1]z^{-n}
 $$
@@ -2734,7 +2756,8 @@ por tanto:
 
 $$
 \boxed{
-Z^+\{x[n-1]\}=
+Z^+\{x[n-1]\}
+=
 x[-1]+z^{-1}X^+(z)
 }
 $$
@@ -2753,7 +2776,8 @@ tenemos:
 
 $$
 \boxed{
-Z^+\{x[n-2]\}=
+Z^+\{x[n-2]\}
+=
 z^{-2}X^+(z)
 +
 x[-1]z^{-1}
@@ -2768,7 +2792,8 @@ Para $k$:
 
 $$
 \boxed{
-Z^+\{x[n-k]\}=
+Z^+\{x[n-k]\}
+=
 z^{-k}X^+(z)
 +
 \sum_{r=1}^{k}
@@ -2799,43 +2824,52 @@ Aplicamos Transformada Z unilateral.
 Tenemos:
 
 $$
-Y^+(z)-
+Y^+(z)
+-
 0.5
-Z^+\{y[n-1]\}=
+Z^+\{y[n-1]\}
+=
 X^+(z)
 $$
 
 Utilizamos:
 
 $$
-Z^+\{y[n-1]\}=
+Z^+\{y[n-1]\}
+=
 z^{-1}Y^+(z)+y[-1]
 $$
 
 Por tanto:
 
 $$
-Y^+(z)-
+Y^+(z)
+-
 0.5
 \left[
 z^{-1}Y^+(z)+2
-\right]=
+\right]
+=
 X^+(z)
 $$
 
 Distribuimos:
 
 $$
-Y^+(z)-
-0.5z^{-1}Y^+(z)-
-1=
+Y^+(z)
+-
+0.5z^{-1}Y^+(z)
+-
+1
+=
 X^+(z)
 $$
 
 Agrupamos:
 
 $$
-Y^+(z)(1-0.5z^{-1})=
+Y^+(z)(1-0.5z^{-1})
+=
 X^+(z)+1
 $$
 
@@ -2843,7 +2877,8 @@ y:
 
 $$
 \boxed{
-Y^+(z)=
+Y^+(z)
+=
 \frac{X^+(z)+1}
 {1-0.5z^{-1}}
 }
@@ -2920,7 +2955,8 @@ $$
 entonces:
 
 $$
-\sum_{n=-\infty}^{\infty}x[n]z^{-n}=
+\sum_{n=-\infty}^{\infty}x[n]z^{-n}
+=
 \sum_{n=0}^{\infty}x[n]z^{-n}
 $$
 
@@ -3312,7 +3348,8 @@ y, por ejemplo:
 
 $$
 \boxed{
-Z^+\{x[n-1]\}=
+Z^+\{x[n-1]\}
+=
 z^{-1}X^+(z)+x[-1]
 }
 $$
@@ -3337,7 +3374,8 @@ $$
 
 $$
 \boxed{
-X(z)=
+X(z)
+=
 \frac{\text{ceros}}
 {\text{polos}}
 }
