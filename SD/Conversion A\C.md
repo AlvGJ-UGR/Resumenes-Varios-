@@ -2026,8 +2026,7 @@ Por tanto:
 
 $$
 \boxed{
-\text{ADC}
-=
+\text{ADC}=
 \text{muestreo temporal}
 +
 \text{cuantificación de amplitud}
