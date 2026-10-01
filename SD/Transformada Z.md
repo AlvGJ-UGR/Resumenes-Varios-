@@ -40,7 +40,6 @@ y seguramente has visto la **Transformada de Fourier de tiempo discreto (DTFT)**
 
 $$
 X(e^{j\omega})=
-
 \sum_{n=-\infty}^{\infty}
 x[n]e^{-j\omega n}
 $$
@@ -116,12 +115,10 @@ Entonces:
 
 $$
 z^{-n}=
-
 (re^{j\omega})^{-n}
 $$
 
 $$
-
 =r^{-n}e^{-j\omega n}
 $$
 
