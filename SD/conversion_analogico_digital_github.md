@@ -60,8 +60,7 @@ Por tanto:
 
 $$
 \boxed{
-\text{Analógica}
-=
+\text{Analógica}=
 \text{tiempo continuo + amplitud continua}
 }
 $$
@@ -70,8 +69,7 @@ mientras que:
 
 $$
 \boxed{
-\text{Digital}
-=
+\text{Digital}=
 \text{tiempo discreto + amplitud discreta}
 }
 $$
@@ -655,8 +653,7 @@ $$
 Para un cuantificador uniforme de redondeo:
 
 $$
-Q(x)
-=
+Q(x)=
 \Delta
 \operatorname{round}
 \left(
