@@ -34,24 +34,24 @@ En física, un **campo** es una magnitud definida en cada punto del espacio y, e
 
 Por ejemplo, la temperatura de una habitación puede describirse mediante un campo escalar:
 
-$$\
-T = T(x,y,z,t)\
+$$
+T = T(x,y,z,t)
 $$
 
 En cada posición y tiempo existe un único valor de temperatura.
 
 El campo eléctrico, en cambio, es un **campo vectorial**. A cada punto del espacio y a cada instante le corresponde un vector:
 $$
-\mathbf{E}(x,y,z,t)\
+\mathbf{E}(x,y,z,t)
 $$
 
 De forma equivalente:
 $$
-E_x(x,y,z,t),\hat{\mathbf{x}}\
-+\
-E_y(x,y,z,t),\hat{\mathbf{y}}\
-+\
-E_z(x,y,z,t),\hat{\mathbf{z}}\
+E_x(x,y,z,t),\hat{\mathbf{x}}
++
+E_y(x,y,z,t),\hat{\mathbf{y}}
++
+E_z(x,y,z,t),\hat{\mathbf{z}}
 $$
 
 Por tanto, el campo eléctrico contiene simultáneamente información sobre:
@@ -62,24 +62,26 @@ Por tanto, el campo eléctrico contiene simultáneamente información sobre:
 * y su dependencia espacial y temporal.
 
 La unidad del campo eléctrico en el Sistema Internacional es:
+
 $$
-# \frac{\mathrm{N}}{\mathrm{C}}
+\frac{\mathrm{N}}{\mathrm{C}}
 $$
 
 $$
-\frac{\mathrm{V}}{\mathrm{m}}\
+\frac{\mathrm{V}}{\mathrm{m}}
 $$
 
 El campo eléctrico puede entenderse operacionalmente mediante la fuerza que experimentaría una carga de prueba.
 
 Si colocamos una carga puntual $q$ en una región donde existe un campo eléctrico $\mathbf{E}$, la fuerza eléctrica sobre ella es:
+
 $$
-q\mathbf{E}\
+q\mathbf{E}
 $$
 
 Por tanto:
 $$
-\frac{\mathbf{F}}{q}\
+\frac{\mathbf{F}}{q}
 $$
 
 Esta expresión debe interpretarse con cierto cuidado: la carga utilizada para medir el campo debe considerarse suficientemente pequeña como para no modificar apreciablemente la distribución de cargas que genera el campo.
@@ -90,24 +92,20 @@ Esta expresión debe interpretarse con cierto cuidado: la carga utilizada para m
 
 Las ecuaciones de Maxwell trabajan fundamentalmente con dos campos:
 
-$$\
-\mathbf{E}(\mathbf{r},t)\
-$$$
+$$
+\mathbf{E}(\mathbf{r},t)
+$$
 
 y
 
-$$\
-\mathbf{B}(\mathbf{r},t)\
+$$
+\mathbf{B}(\mathbf{r},t)
 $$
 
 donde $\mathbf{r}$ representa la posición:
 
-x\hat{\mathbf{x}}
-+
-y\hat{\mathbf{y}}
-+
-z\hat{\mathbf{z}}\
-
+$$
+x\hat{\mathbf{x}} + y\hat{\mathbf{y}} + z\hat{\mathbf{z}}
 $$
 
 El campo eléctrico $\mathbf{E}$ está relacionado directamente con las cargas eléctricas y también puede ser generado por campos magnéticos variables en el tiempo.
@@ -119,12 +117,12 @@ Esta última afirmación es fundamental.
 En electrostática se suele estudiar el campo eléctrico producido por cargas inmóviles y, por separado, el campo magnético producido por corrientes estacionarias. Las ecuaciones de Maxwell muestran que esta separación es solamente un caso particular.
 
 En general:
-
-\mathbf{E}(\mathbf{r},t)\
+$$
+\mathbf{E}(\mathbf{r},t)
 $$
 
-\mathbf{B}(\mathbf{r},t)\
-
+$$
+\mathbf{B}(\mathbf{r},t)
 $$
 
 y ambos campos están acoplados.
@@ -146,39 +144,42 @@ En electromagnetismo aparecen dos magnitudes fuente fundamentales:
 
 Si la carga está distribuida de manera continua por el espacio, en lugar de hablar de una carga puntual $q$ utilizamos una densidad volumétrica de carga:
 
-\rho(x,y,z,t)\
+$$
+\rho(x,y,z,t)
 $$
 
 Su unidad es:
 
-\frac{\mathrm{C}}{\mathrm{m}^3}\
-
 $$
+\frac{\mathrm{C}}{\mathrm{m}^3}
+$$
+
 
 La carga contenida en un volumen $V$ se obtiene mediante:
 
+$$
 \iiint_V\
 \rho,dV\
 $$
 
 o, utilizando una notación más compacta:
 
+$$
 \int_V
 \rho,dV\
-
 $$
 
 donde el elemento diferencial de volumen es:
 
-dx,dy,dz\
+$$
+dx,dy,dz
 $$
 
 La densidad $\rho$ nos indica cómo está distribuida espacialmente la carga.
 
 Por ejemplo, si $\rho$ es constante en un volumen $V$:
-
-\rho V\
-
+$$
+\rho V
 $$
 
 En una distribución no uniforme, la carga debe calcularse mediante la integral.
@@ -191,37 +192,40 @@ No toda distribución de carga ocupa un volumen.
 
 Una carga puede estar confinada aproximadamente a una superficie. En ese caso utilizamos una densidad superficial:
 
-\frac{dQ}{dS}\
+$$
+\frac{dQ}{dS}
 $$
 
 con unidades:
 
-\frac{\mathrm{C}}{\mathrm{m}^2}\
-
+$$
+\frac{\mathrm{C}}{\mathrm{m}^2}
 $$
 
 La carga total sobre una superficie $S$ es:
 
-\int_S\
-\sigma,dS\
+$$
+\int_S
+\sigma,dS
 $$
 
 También puede existir una distribución de carga a lo largo de una línea, descrita mediante la densidad lineal:
 
-\frac{dQ}{dl}\
-
+$$
+\frac{dQ}{dl}
 $$
 
 con unidades:
 
-\frac{\mathrm{C}}{\mathrm{m}}\
+$$
+\frac{\mathrm{C}}{\mathrm{m}}
 $$
 
 En ese caso:
 
+$$
 \int_L
-\lambda,dl\
-
+\lambda,dl
 $$
 
 Estas tres descripciones son casos particulares de una misma idea:
@@ -236,9 +240,10 @@ Antes de introducir la primera ecuación de Maxwell conviene recordar la ley de 
 
 Para dos cargas puntuales $q_1$ y $q_2$, separadas por una distancia $r$, la fuerza eléctrica es:
 
-\frac{1}{4\pi\varepsilon_0}\
-\frac{q_1q_2}{r^2}\
-\hat{\mathbf{r}}\
+$$
+\frac{1}{4\pi\varepsilon_0}
+\frac{q_1q_2}{r^2}
+\hat{\mathbf{r}}
 $$
 
 donde:
@@ -248,13 +253,13 @@ donde:
 * $\hat{\mathbf{r}}$ es el vector unitario que apunta desde una carga hacia la otra.
 
 Si consideramos que $q_1$ es la carga que genera el campo y $q_2$ una carga de prueba, podemos escribir:
-
+$$
 q_2\mathbf{E}\
-
 $$
 
 Por tanto:
 
+$$
 \frac{1}{4\pi\varepsilon_0}\
 \frac{q_1}{r^2}\
 \hat{\mathbf{r}}\
@@ -263,10 +268,9 @@ $$
 Esto muestra que una carga puntual positiva genera un campo eléctrico radial que decrece como $1/r^2$.
 
 Para una carga puntual $q$ situada en el origen:
-
+$$
 \frac{q}{4\pi\varepsilon_0 r^2}
 \hat{\mathbf{r}}\
-
 $$
 
 Esta expresión será fundamental para comprender la ley de Gauss.
@@ -280,20 +284,19 @@ La primera ecuación de Maxwell se expresa naturalmente mediante el concepto de 
 Supongamos una superficie diferencial $dS$.
 
 Asociamos a ella un vector diferencial de superficie:
-
+$$
 \hat{\mathbf{n}},dS\
 $$
 
 donde $\hat{\mathbf{n}}$ es el vector unitario normal a la superficie.
 
 El flujo diferencial de un campo vectorial $\mathbf{E}$ a través de esa superficie es:
-
+$$
 \mathbf{E}\cdot d\mathbf{S}\
-
 $$
 
 Como se trata de un producto escalar:
-
+$$
 E,dS\cos\theta\
 $$
 
