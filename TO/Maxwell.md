@@ -41,13 +41,12 @@ $$
 En cada posición y tiempo existe un único valor de temperatura.
 
 El campo eléctrico, en cambio, es un **campo vectorial**. A cada punto del espacio y a cada instante le corresponde un vector:
-
+$$
 \mathbf{E}(x,y,z,t)\
-
 $$
 
 De forma equivalente:
-
+$$
 E_x(x,y,z,t),\hat{\mathbf{x}}\
 +\
 E_y(x,y,z,t),\hat{\mathbf{y}}\
@@ -63,25 +62,25 @@ Por tanto, el campo eléctrico contiene simultáneamente información sobre:
 * y su dependencia espacial y temporal.
 
 La unidad del campo eléctrico en el Sistema Internacional es:
-
+$$
 # \frac{\mathrm{N}}{\mathrm{C}}
+$$
 
+$$
 \frac{\mathrm{V}}{\mathrm{m}}\
-
 $$
 
 El campo eléctrico puede entenderse operacionalmente mediante la fuerza que experimentaría una carga de prueba.
 
 Si colocamos una carga puntual $q$ en una región donde existe un campo eléctrico $\mathbf{E}$, la fuerza eléctrica sobre ella es:
-
+$$
 q\mathbf{E}\
 $$
 
 Por tanto:
-
+$$
 \frac{\mathbf{F}}{q}\
-
-$$$
+$$
 
 Esta expresión debe interpretarse con cierto cuidado: la carga utilizada para medir el campo debe considerarse suficientemente pequeña como para no modificar apreciablemente la distribución de cargas que genera el campo.
 
@@ -18111,7 +18110,6 @@ y de ahí podremos obtener:
 * y conexión con líneas de transmisión y circuitos.
 
 Esta conexión es especialmente importante porque permite pasar de una descripción puramente de **campos** a una descripción de **potencia y energía**, que es la que finalmente necesitamos para analizar sistemas electromagnéticos reales.
-
 
 
 
