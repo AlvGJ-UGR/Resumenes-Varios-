@@ -191,10 +191,26 @@ footer{margin-top:60px;color:var(--muted);font-size:13px}
   .md pre,.md table,.md img{break-inside:avoid}
   .tw{overflow:visible}
 }
+/* Mejoras 2 */
+#up{position:fixed;right:18px;bottom:18px;z-index:45;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);
+  background:var(--panel);color:var(--text);font-size:18px;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(8px);
+  transition:opacity .2s,transform .2s;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+#up.show{opacity:1;pointer-events:auto;transform:none}
+#up:hover{border-color:var(--accent)}
+.toc a.act{color:var(--text);border-color:var(--c);font-weight:600}
+.md blockquote.callout{border-left-color:var(--k);background:color-mix(in srgb,var(--k) 10%,transparent)}
+.md blockquote.callout .ct{font-weight:700;color:var(--k);margin:.3em 0 .1em}
+.callout.note{--k:#58a6ff}.callout.tip{--k:#3fb950}.callout.important{--k:#a371f7}.callout.warning{--k:#d29922}.callout.caution{--k:#f85149}
+.mm{overflow-x:auto;margin:0 0 1em;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.mermaid{white-space:pre;text-align:left;font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}
+.mermaid[data-processed]{text-align:center;white-space:normal;color:inherit}
+.mermaid svg{max-width:100%;height:auto}
+@media print{#up{display:none!important}.mm{background:#fff;break-inside:avoid}}
 </style>
 </head>
 <body>
 <div id="prog"></div>
+<button id="up" type="button" aria-label="Volver arriba" title="Volver arriba">↑</button>
 <header class="top">
   <button id="menuBtn" aria-label="Abrir menú">☰</button>
   <a class="brand" href="#/">📚 <span id="siteTitle">Resúmenes</span></a>
@@ -428,6 +444,9 @@ function searchView(text) {
         ${byText.length ? `<h3>Dentro del texto</h3><ul>${byText.map(f => item(f, snippet(f, terms))).join('')}</ul>` : ''}
         ${total || pending ? '' : '<div class="empty">Sin coincidencias. Prueba con otra palabra.</div>'}
       </div>`;
+    main.querySelectorAll('a.res').forEach(a => a.addEventListener('click', () => {
+      try { sessionStorage.setItem('rv-hl', JSON.stringify(terms.filter(t => t.length > 1))); } catch {}
+    }));
   };
   const p = terms.join('').length >= 2 ? ensureIndex() : null;
   draw();
@@ -494,6 +513,20 @@ async function fileView(f) {
   md.innerHTML = renderMd(text);
   fixContent(md, f);
   buildToc(md);
+  let hl = null;
+  try { hl = JSON.parse(sessionStorage.getItem('rv-hl')); sessionStorage.removeItem('rv-hl'); } catch {}
+  const first = hl && hl.length ? highlight(md, hl) : null;
+  if (first) {
+    first.scrollIntoView({ block: 'center', behavior: 'instant' });
+    const b = document.createElement('button'); b.className = 'btn'; b.textContent = 'Quitar resaltado';
+    b.onclick = () => { md.querySelectorAll('mark.hl').forEach(m => m.replaceWith(m.textContent)); md.normalize(); b.remove(); };
+    const bar = $('.actions'); bar.insertBefore(b, bar.querySelector('.meta'));
+  } else {
+    let y = 0;
+    try { y = JSON.parse(localStorage.getItem('rv-pos') || '{}')[f.path] || 0; } catch {}
+    if (y > 0) scrollTo({ top: y, behavior: 'instant' });
+  }
+  state.cur = f.path;
   $('#copyBtn').onclick = async e => {
     try { await navigator.clipboard.writeText(location.href); e.target.textContent = '¡Copiado!'; }
     catch { e.target.textContent = 'No se pudo copiar'; }
@@ -506,8 +539,67 @@ async function fileView(f) {
   updateProgress();
 }
 
+let mermaidP = null;
+function renderMermaid(nodes) {
+  mermaidP = mermaidP || new Promise((res, rej) => {
+    if (window.mermaid) return res(window.mermaid);
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js';
+    sc.onload = () => res(window.mermaid);
+    sc.onerror = () => { mermaidP = null; rej(new Error('mermaid')); };
+    document.head.append(sc);
+  });
+  mermaidP.then(m => { m.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' }); return m.run({ nodes }); })
+    .catch(() => {});
+}
+
+function highlight(root, terms) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => n.parentElement.closest('.katex,.mermaid,script,style') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  let first = null;
+  for (const n of nodes) {
+    const t = n.nodeValue, nt = norm(t);
+    if (nt.length !== t.length) continue;
+    const ranges = [];
+    for (const w of terms) { let k = nt.indexOf(w); while (k >= 0) { ranges.push([k, k + w.length]); k = nt.indexOf(w, k + w.length); } }
+    if (!ranges.length) continue;
+    ranges.sort((a, b) => a[0] - b[0]);
+    const frag = document.createDocumentFragment(); let last = 0;
+    for (const [a, b] of ranges) {
+      if (a < last) continue;
+      frag.append(t.slice(last, a));
+      const m = document.createElement('mark'); m.className = 'hl'; m.textContent = t.slice(a, b); frag.append(m);
+      if (!first) first = m;
+      last = b;
+    }
+    frag.append(t.slice(last)); n.replaceWith(frag);
+  }
+  return first;
+}
+
 function fixContent(md, f) {
   const base = 'https://h/' + encPath(f.path);
+  const CALL = { note: 'Nota', tip: 'Consejo', important: 'Importante', warning: 'Aviso', caution: 'Precaución' };
+  md.querySelectorAll('blockquote').forEach(bq => {
+    const p = bq.firstElementChild;
+    if (!p || p.tagName !== 'P') return;
+    const m = p.innerHTML.match(/^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:<br\s*\/?>)?\s*/i);
+    if (!m) return;
+    const k = m[1].toLowerCase();
+    p.innerHTML = p.innerHTML.slice(m[0].length);
+    if (!p.textContent.trim() && !p.children.length) p.remove();
+    bq.classList.add('callout', k);
+    const t = document.createElement('div'); t.className = 'ct'; t.textContent = CALL[k];
+    bq.prepend(t);
+  });
+  const mm = [];
+  md.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const box = document.createElement('div'); box.className = 'mm';
+    const d = document.createElement('div'); d.className = 'mermaid'; d.textContent = code.textContent;
+    box.append(d); code.parentElement.replaceWith(box); mm.push(d);
+  });
+  if (mm.length) renderMermaid(mm);
   md.querySelectorAll('img').forEach(img => {
     const s = img.getAttribute('src') || '';
     if (!/^(https?:|data:)/i.test(s)) {
@@ -559,11 +651,13 @@ function buildToc(md) {
   toc.querySelectorAll('a').forEach(a => a.addEventListener('click', e => {
     e.preventDefault(); document.getElementById(a.getAttribute('href').slice(1)).scrollIntoView();
   }));
+  const links = [...toc.querySelectorAll('a')];
+  spy = items.map((h, i) => [h, links[i]]);
 }
 
 /* ---------- Rutas y eventos ---------- */
 function route() {
-  searchSeq++;
+  searchSeq++; state.cur = null; spy = null;
   document.body.classList.remove('open');
   let h = '';
   try { h = decodeURIComponent(location.hash.replace(/^#\/?/, '')); } catch {}
@@ -618,11 +712,33 @@ function setFs(n) {
   try { localStorage.setItem('rv-fs', String(fs)); } catch {}
 }
 const prog = $('#prog');
+const up = $('#up');
+up.onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
+let spy = null;
 function updateProgress() {
+  up.classList.toggle('show', scrollY > 600);
   if (!$('#md')) { prog.style.width = '0'; return; }
   const max = document.documentElement.scrollHeight - innerHeight;
   prog.style.width = (max > 0 ? Math.min(100, scrollY / max * 100) : 0) + '%';
+  if (spy) {
+    let cur = null;
+    for (const [h, a] of spy) { if (h.getBoundingClientRect().top <= 110) cur = a; else break; }
+    for (const [, a] of spy) a.classList.toggle('act', a === cur);
+  }
 }
+let posT;
+function savePos() {
+  const cur = state.cur;
+  if (!cur || !$('#md')) return;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  try {
+    const m = JSON.parse(localStorage.getItem('rv-pos') || '{}');
+    if (max > 0 && scrollY > 200 && scrollY < max * 0.95) m[cur] = Math.round(scrollY); else delete m[cur];
+    const keys = Object.keys(m); if (keys.length > 60) delete m[keys[0]];
+    localStorage.setItem('rv-pos', JSON.stringify(m));
+  } catch {}
+}
+addEventListener('scroll', () => { clearTimeout(posT); posT = setTimeout(savePos, 300); }, { passive: true });
 addEventListener('scroll', updateProgress, { passive: true });
 addEventListener('hashchange', () => setTimeout(updateProgress, 0));
 addEventListener('keydown', e => {
