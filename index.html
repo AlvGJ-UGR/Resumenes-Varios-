@@ -229,7 +229,7 @@ footer{margin-top:60px;color:var(--muted);font-size:13px}
 const CFG = {
   owner: 'AlvGJ-UGR',
   repo: 'Resumenes-Varios-',
-  branch: 'main',
+  branch: 'main', // Se autodetectará si falla
   titulo: 'Resúmenes · Teleco',
   orden: ['CCE', 'SD', 'ST', 'TC', 'TO'],
   nombres: { CCE: 'Componentes y Circuitos', SD: 'Señales Digitales', ST: 'Sistemas Telemáticos', TC: 'Teoría de la Comunicación', TO: 'Transmisión de Ondas' }
@@ -239,46 +239,68 @@ const CFG = {
 const COLORS = ['#79B8FF','#3fb950','#d29922','#f778ba','#a371f7','#ff7b72','#39c5cf'];
 const \$ = s => document.querySelector(s);
 const main = \$('#main'), side = $('#side'), q = $('#q');
-const state = { subjects: [], byPath: new Map(), bySubj: new Map(), offline: false };
+const state = { subjects: [], byPath: new Map(), bySubj: new Map(), offline: false, branch: CFG.branch };
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const encPath = p => p.split('/').map(encodeURIComponent).join('/');
 const REPO = `https://github.com/${CFG.owner}/${CFG.repo}`;
-const rawUrl = p => `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${encPath(p)}`;
-const ghUrl = p => `${REPO}/blob/${CFG.branch}/${encPath(p)}`;
-const folderUrl = k => `${REPO}/tree/${CFG.branch}/${encodeURIComponent(k)}`;
+const rawUrl = p => `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${state.branch}/${encPath(p)}`;
+const ghUrl = p => `${REPO}/blob/${state.branch}/${encPath(p)}`;
+const folderUrl = k => `${REPO}/tree/${state.branch}/${encodeURIComponent(k)}`;
 const href = p => '#/' + encPath(p);
 const prettify = f => f.replace(/\.(md|markdown)\$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
 const cmp = (a, b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' });
 
-/* ---------- Datos ---------- */
+/* ---------- Datos robustos con autodetección de rama y reintentos ---------- */
 async function fetchTree() {
-  try {
-    const r = await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/git/trees/${CFG.branch}?recursive=1`,
-      { headers: { Accept: 'application/vnd.github+json' } });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
-    return j.tree.filter(x => x.type === 'blob').map(x => x.path);
-  } catch (e) {
-    const r = await fetch(`https://data.jsdelivr.com/v1/package/gh/${CFG.owner}/${CFG.repo}@${CFG.branch}/flat`);
-    if (!r.ok) throw e;
-    const j = await r.json();
-    return j.files.map(f => f.name.replace(/^\//, ''));
+  const branches = [CFG.branch, 'main', 'master'];
+  let lastErr = null;
+
+  for (const b of [...new Set(branches)]) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/git/trees/${b}?recursive=1`,
+        { headers: { Accept: 'application/vnd.github+json' } });
+      if (r.ok) {
+        state.branch = b;
+        const j = await r.json();
+        return j.tree.filter(x => x.type === 'blob').map(x => x.path);
+      }
+      lastErr = new Error('HTTP ' + r.status);
+    } catch (e) {
+      lastErr = e;
+    }
   }
+
+  // Plan B: CDN jsDelivr si la API falla o agota límites
+  try {
+    const r = await fetch(`https://data.jsdelivr.com/v1/package/gh/${CFG.owner}/${CFG.repo}@${CFG.branch}/flat`);
+    if (r.ok) {
+      const j = await r.json();
+      return j.files.map(f => f.name.replace(/^\//, ''));
+    }
+  } catch {}
+
+  throw lastErr || new Error('No se pudo conectar con el repositorio');
 }
 
 async function loadTree() {
-  const key = 'rv-tree-v2', ttl = 3 * 60e3;
+  const key = 'rv-tree-v3', ttl = 3 * 60e3;
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(key)); } catch {}
-  if (cached && Date.now() - cached.t < ttl) return cached.tree;
+  if (cached && cached.tree && cached.branch && Date.now() - cached.t < ttl) {
+    state.branch = cached.branch;
+    return cached.tree;
+  }
   try {
     const tree = await fetchTree();
-    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), tree })); } catch {}
+    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), branch: state.branch, tree })); } catch {}
     return tree;
   } catch (e) {
-    if (cached) return cached.tree;
+    if (cached && cached.tree) {
+      state.branch = cached.branch || CFG.branch;
+      return cached.tree;
+    }
     throw e;
   }
 }
@@ -298,7 +320,7 @@ function build(paths) {
 }
 
 function setSubjects(list) {
-  state.subjects = list.map((s, i) => ({ ...s, name: CFG.nombres[s.key] || '', color: COLORS[i % COLORS.length] }));
+  state.subjects = list.map((s, i) => ({ ...s, name: CFG.nombres[s.key] || s.key, color: COLORS[i % COLORS.length] }));
   state.byPath.clear(); state.bySubj.clear();
   for (const s of state.subjects) {
     state.bySubj.set(s.key, s);
@@ -367,7 +389,7 @@ function home() {
     <div class="cards">${cards}</div>
     <footer>Centro de estudio personal · Sincronizado con <a href="${REPO}" target="_blank" rel="noopener">GitHub</a> · <a href="#/" id="refresh">Actualizar lista</a></footer>`;
   const rf = \$('#refresh');
-  if (rf) rf.onclick = e => { e.preventDefault(); try { localStorage.removeItem('rv-tree-v2'); } catch {} location.reload(); };
+  if (rf) rf.onclick = e => { e.preventDefault(); try { localStorage.removeItem('rv-tree-v3'); } catch {} location.reload(); };
   setActive(null, null);
   window.scrollTo(0, 0);
 }
@@ -496,22 +518,32 @@ async function fileView(f) {
   main.innerHTML = `<div class="loading">Cargando «${esc(f.title)}»…</div>`;
   setActive(f.path, f.subj);
   window.scrollTo(0, 0);
+
   let text = f.text;
-  if (text == null) try {
-    const r = await fetch(rawUrl(f.path));
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    text = await r.text();
-    f.text = text;
-    let nt = '', map = [];
-    for (let j = 0; j < text.length; j++) {
-      const normChar = text[j].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      for (let k = 0; k < normChar.length; k++) { nt += normChar[k]; map.push(j); }
+  if (text == null) {
+    try {
+      const r = await fetch(rawUrl(f.path));
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      text = await r.text();
+      f.text = text;
+      let nt = '', map = [];
+      for (let j = 0; j < text.length; j++) {
+        const normChar = text[j].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        for (let k = 0; k < normChar.length; k++) { nt += normChar[k]; map.push(j); }
+      }
+      f.ntext = nt; f.imap = map;
+    } catch (e) {
+      main.innerHTML = `<div class="err">No se pudo cargar el resumen (${esc(e.message)}). 
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="retryBtn">Reintentar</button>
+          <a class="btn" href="${ghUrl(f.path)}" target="_blank" rel="noopener">Ábrelo en GitHub ↗</a>
+        </div></div>`;
+      const rb = \$('#retryBtn');
+      if (rb) rb.onclick = () => fileView(f);
+      return;
     }
-    f.ntext = nt; f.imap = map;
-  } catch (e) {
-    main.innerHTML = `<div class="err">No se pudo cargar el resumen (${esc(e.message)}). <a href="${ghUrl(f.path)}" target="_blank" rel="noopener">Ábrelo en GitHub ↗</a></div>`;
-    return;
   }
+
   if (location.hash !== href(f.path) && decodeURIComponent(location.hash.slice(2)) !== f.path) return;
   const prev = list[i - 1], next = list[i + 1];
   const mins = Math.max(1, Math.round(text.split(/\s+/).length / 200));
