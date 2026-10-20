@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0B0F14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Resúmenes</title>
+<script>
+try{var p=JSON.parse(localStorage.getItem('rv-theme'));var l=p==='light'||(p!=='dark'&&matchMedia('(prefers-color-scheme: light)').matches);document.documentElement.dataset.theme=l?'light':'dark'}catch(e){}
+try{if(JSON.parse(localStorage.getItem('rv-noside'))==1&&innerWidth>1000)document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('noside')})}catch(e){}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link id="hl-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link id="hl-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="not all">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+/*CSS*/
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<svg id="sprite" aria-hidden="true"></svg>
+<header class="top">
+  <button class="ib" id="menuBtn" aria-label="Índice"><svg class="ic"><use href="#i-menu"/></svg></button>
+  <a class="brand" href="#/"><span class="logo"><svg class="ic"><use href="#i-book"/></svg></span><span id="siteTitle">Resúmenes</span></a>
+  <div class="search"><svg class="ic si"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Buscar en resúmenes, fórmulas, etiquetas…" autocomplete="off" spellcheck="false"><kbd>/</kbd></div>
+  <button class="chipb" id="cmdBtn" title="Paleta de comandos"><svg class="ic"><use href="#i-command"/></svg><kbd>Ctrl K</kbd></button>
+  <button class="ib" id="themeBtn" aria-label="Tema"></button>
+  <a class="ib gh" id="ghTop" target="_blank" rel="noopener" title="Repositorio"><svg class="ic"><use href="#i-github"/></svg></a>
+</header>
+<div class="layout">
+  <nav id="side" aria-label="Índice"></nav>
+  <div id="scrim"></div>
+  <main id="main"><div class="loading">Cargando…</div></main>
+</div>
+<button id="up" aria-label="Subir"><svg class="ic"><use href="#i-up"/></svg></button>
+<div id="toasts"></div>
+<script>
+/*JS*/
+</script>
+</body>
+</html>
