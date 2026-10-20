@@ -615,6 +615,73 @@ body.focus #main{padding-top:48px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
 @media (max-width:640px){.pomo{right:8px;left:8px;width:auto;bottom:8px}.selbar button span{display:none}}
 
+/* ===== Diseño minimal ===== */
+/* cabecera: solo menú, marca, búsqueda y tema */
+#cmdBtn,#ghTop{display:none}
+#pomoBtn:not(.run){display:none}
+.top{gap:8px}
+.search input{background:transparent;border-color:var(--line)}
+/* menú lateral en una columna */
+.tg1{display:grid;gap:1px;margin-bottom:6px}
+.tg1 .ni,.tg2 .ni{padding:8px 10px}
+.more{margin:2px 0 8px}
+.more>summary{list-style:none;cursor:pointer;padding:7px 10px;border-radius:9px;color:var(--tx3);font-size:12.5px;font-weight:500}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::after{content:"+";float:right;font-size:15px;line-height:1}
+.more[open]>summary::after{content:"–"}
+.more>summary:hover{color:var(--tx);background:var(--s1)}
+.sidehead{margin-top:20px}
+/* portada */
+.hero{margin:10px 0 22px}
+.cont{display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:16px;background:var(--s1);border:1px solid var(--line);color:var(--tx);transition:border-color .18s,background .18s}
+.cont:hover{border-color:var(--c,var(--blue));background:var(--s2);text-decoration:none}
+.cont-i{display:grid;place-items:center;width:46px;height:46px;flex:none;border-radius:50%;background:var(--c,var(--blue));color:var(--on-blue)}
+.cont-t{display:flex;flex-direction:column;min-width:0}
+.cont-t small{color:var(--tx3);font-size:12px;letter-spacing:.03em}
+.cont-t b{font-size:1.25rem;font-weight:700;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cont-t i{font-style:normal;color:var(--tx2);font-size:13px}
+.today{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:14px 2px 6px;color:var(--tx2);font-size:14px}
+.today span{color:var(--tx3);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.sec-h{margin-top:34px}
+.sc{padding:16px;background:transparent;border-radius:14px}
+.sc::before{display:none}
+.sc:hover{transform:none;background:var(--s1);box-shadow:none}
+.two{margin-top:34px;gap:28px}.two.one{grid-template-columns:1fr}
+.two section .sec-h{margin-top:0}
+.foot{margin-top:56px;opacity:.8}
+/* resumen */
+.crumbs{margin-bottom:10px}
+.dh-b{align-items:center;gap:10px;margin-bottom:8px}
+.dh-m{color:var(--tx3);font-size:13px}
+.dh-t{margin-bottom:16px}
+.dh-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 26px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.dh-bar .stseg{margin:0;border:0;background:transparent;gap:2px}
+.dh-bar .stseg button{border:0;border-radius:99px;padding:6px 12px;font-size:12.5px}
+.dh-bar .dh-act{margin:0;gap:6px}
+.dh-act .btn{background:transparent}
+.dh-act .btn:hover{background:var(--s1)}
+.menu{position:relative}
+.menu>summary{list-style:none;cursor:pointer}
+.menu>summary::-webkit-details-marker{display:none}
+.menu[open]>summary{border-color:var(--blue);background:var(--s2)}
+.menu-p{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:272px;max-width:calc(100vw - 32px);padding:6px;border-radius:12px;background:var(--s1);border:1px solid var(--line2);box-shadow:var(--shadow)}
+.menu-p hr{border:0;border-top:1px solid var(--line);margin:6px 2px}
+.mi{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:var(--tx);font:inherit;font-size:13.5px;text-align:left;cursor:pointer}
+.mi:hover{background:var(--s2);text-decoration:none}
+.mi .ic{color:var(--tx2)}
+.mi-fs{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--tx2);font-size:13.5px}
+.mi-fs>span:last-child{display:flex;gap:4px}
+.mi-tags{display:flex;flex-wrap:wrap;gap:6px;padding:4px 6px}
+.toc{opacity:.65;transition:opacity .2s}.toc:hover{opacity:1}
+.pn{margin-top:36px}
+.pn a{background:transparent}
+/* notas plegadas */
+details.notes{margin-top:34px;background:transparent}
+details.notes>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;color:var(--tx2);font-weight:600;font-size:14px}
+details.notes>summary::-webkit-details-marker{display:none}
+details.notes[open]>summary{margin-bottom:12px;color:var(--tx)}
+@media (max-width:640px){.dh-bar{flex-direction:column;align-items:flex-start}.cont{padding:16px}}
+
 </style>
 </head>
 <body>
@@ -713,6 +780,7 @@ const ICONS = {
   repeat: '<path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5"/>',
   play: '<path d="m8 5 11 7-11 7z"/>',
   flame: '<path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z"/>',
+  dots: '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
   bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'
 };
 const SUBJECT_ICONS = ['calc', 'network', 'wave', 'cpu', 'atom'];
@@ -750,7 +818,7 @@ const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && 
 
 /* ---------- Almacenamiento local (con copia en memoria si el navegador lo bloquea) ---------- */
 const mem = {};
-const SYNC_SKIP = new Set(['rv-tree-v1', 'rv-meta', 'rv-sync', 'rv-theme', 'rv-noside', 'rv-pos', 'rv-fs', 'rv-mw', 'rv-pomo']);
+const SYNC_SKIP = new Set(['rv-tree-v1', 'rv-meta', 'rv-sync', 'rv-theme', 'rv-noside', 'rv-pos', 'rv-fs', 'rv-mw', 'rv-pomo', 'rv-full']);
 const stamp = k => { if (SYNC_SKIP.has(k)) return; try { const m = JSON.parse(localStorage.getItem('rv-meta') || '{}'); m[k] = Date.now(); localStorage.setItem('rv-meta', JSON.stringify(m)); } catch {} if (typeof syncSoon === 'function') syncSoon(); };
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); if (v != null) return JSON.parse(v); } catch {} return k in mem ? mem[k] : d; },
@@ -1328,12 +1396,12 @@ function jumpTo(md, ref) {
 
 /* ============ Vistas principales ============ */
 const TOOLS = [
-  { id: 'inicio', label: 'Inicio', short: 'Inicio', icon: 'home' },
-  { id: 'biblioteca', label: 'Biblioteca', short: 'Biblioteca', icon: 'library' },
-  { id: 'favoritos', label: 'Favoritos', short: 'Favoritos', icon: 'star' },
+  { id: 'inicio', main: 1, label: 'Inicio', short: 'Inicio', icon: 'home' },
+  { id: 'biblioteca', main: 1, label: 'Biblioteca', short: 'Biblioteca', icon: 'library' },
+  { id: 'favoritos', main: 1, label: 'Favoritos', short: 'Favoritos', icon: 'star' },
   { id: 'historial', label: 'Recientes', short: 'Recientes', icon: 'clock' },
-  { id: 'tarjetas', label: 'Tarjetas de memoria', short: 'Tarjetas', icon: 'cards', badge: 'cards' },
-  { id: 'quiz', label: 'Autoevaluación', short: 'Quiz', icon: 'quiz' },
+  { id: 'tarjetas', main: 1, label: 'Tarjetas de memoria', short: 'Tarjetas', icon: 'cards', badge: 'cards' },
+  { id: 'quiz', main: 1, label: 'Autoevaluación', short: 'Quiz', icon: 'quiz' },
   { id: 'formulas', label: 'Biblioteca de fórmulas', short: 'Fórmulas', icon: 'sigma' },
   { id: 'mapas', label: 'Mapas conceptuales', short: 'Mapas', icon: 'map' },
   { id: 'examenes', label: 'Planificador de exámenes', short: 'Exámenes', icon: 'target' },
@@ -1398,16 +1466,20 @@ function docsList(s) {
 function renderSide() {
   const side = $('#side'); if (!side) return;
   const open = new Set($$('details[open]', side).map(d => d.dataset.s)), sc = side.scrollTop;
-  const tools = TOOLS.map(t => {
+  const full = store.get('rv-full', 0) === 1;
+  const mk = t => {
     const b = badgeFor(t), on = S.view === 'tool:' + t.id || (t.id === 'inicio' && S.view === 'home');
     return `<a class="ni${on ? ' on' : ''}" href="${toolUrl(t.id)}" title="${esc(t.label)}">${ico(t.icon)}<span>${t.short}</span>${b ? `<em>${b}</em>` : ''}</a>`;
-  }).join('');
+  };
+  const more = TOOLS.filter(t => !t.main), moreOn = more.some(t => S.view === 'tool:' + t.id);
+  const tools = full ? `<div class="tg2">${TOOLS.map(mk).join('')}</div>`
+    : `<div class="tg1">${TOOLS.filter(t => t.main).map(mk).join('')}</div><details class="more" data-s="_more"${moreOn || open.has('_more') ? ' open' : ''}><summary>Más herramientas</summary><div class="tg1">${more.map(mk).join('')}</div></details>`;
   const subs = S.subjects.map(s => {
     const p = progress(s.files);
     const isOpen = open.has(s.key) || (S.cur && S.cur.subj === s.key) || S.view === 'subject:' + s.key;
     return `<details class="sj" data-s="${esc(s.key)}" style="--c:${s.color}"${isOpen ? ' open' : ''}><summary><span class="sj-ic">${ico(s.icon)}</span><b>${esc(s.key)}</b><span class="sj-n">${esc(s.name)}</span><em>${p.pct}%</em></summary><div class="sj-bar"><i style="width:${p.pct}%"></i></div><div class="sjl">${docsList(s)}<a class="sj-all" href="#/${encodeURIComponent(s.key)}">Ver asignatura ${ico('chev')}</a></div></details>`;
   }).join('');
-  side.innerHTML = `<div class="tg2">${tools}</div><div class="sidehead">Asignaturas</div>${subs || '<p class="muted pad">Sin asignaturas</p>'}`;
+  side.innerHTML = `${tools}<div class="sidehead">Asignaturas</div>${subs || '<p class="muted pad">Sin asignaturas</p>'}`;
   side.scrollTop = sc;
   const on = $('a.sl.on', side);
   if (on) { const top = on.offsetTop; if (top < side.scrollTop + 60 || top > side.scrollTop + side.clientHeight - 80) side.scrollTop = Math.max(0, top - side.clientHeight / 3); }
@@ -1420,15 +1492,11 @@ function homeView() {
   const hist = store.get(K.hist, []).map(h => S.byPath.get(h.p)).filter(Boolean);
   const fv = favs().docs.map(p => S.byPath.get(p)).filter(Boolean);
   const last = hist[0], ex = nextExam(), dr = dueReviews().length, dc = IDX.ready ? dueCards().length : 0, tk = openTasks().length;
-  const kp = (href, icon, small, b, i = '', c = '') => `<a class="kp" href="${href}"${c ? ` style="--c:${c}"` : ''}><span class="kp-i">${ico(icon)}</span><span class="kp-t"><small>${small}</small><b>${b}</b>${i ? `<i>${i}</i>` : ''}</span></a>`;
-  const panels = [
-    last ? kp(href(last.path), 'play', 'Continuar', esc(last.title), esc(last.subj), last.s.color) : kp(toolUrl('biblioteca'), 'library', 'Empezar', 'Explora la biblioteca'),
-    ex ? kp(toolUrl('examenes'), 'target', 'Próximo examen', esc(ex.name), `${relDay(ex.date)} · ${fmtDate(ex.date)}`) : kp(toolUrl('examenes'), 'target', 'Exámenes', 'Planifica el primero'),
-    kp(toolUrl('calendario'), 'calendar', 'Repasos pendientes', plural(dr, 'repaso', 'repasos'), dr ? 'hasta hoy' : 'al día'),
-    kp(toolUrl('tarjetas'), 'cards', 'Tarjetas', IDX.ready ? plural(dc, 'pendiente', 'pendientes') : 'Indexando…', 'repetición espaciada'),
-    kp(toolUrl('tareas'), 'tasks', 'Tareas', plural(tk, 'por hacer', 'por hacer')),
-    kp(toolUrl('estadisticas'), 'flame', 'Objetivo semanal', weekSessions() + '/' + getGoal(), 'racha ' + calcStreak() + (calcStreak() === 1 ? ' día' : ' días'))
-  ].join('');
+  const cont = last
+    ? `<a class="cont" href="${href(last.path)}" style="--c:${last.s.color}"><span class="cont-i">${ico('play')}</span><span class="cont-t"><small>Continuar donde lo dejaste</small><b>${esc(last.title)}</b><i>${esc(last.subj)}</i></span></a>`
+    : `<a class="cont" href="${toolUrl('biblioteca')}"><span class="cont-i">${ico('library')}</span><span class="cont-t"><small>Empezar</small><b>Explora la biblioteca</b></span></a>`;
+  const todo = [dr && [toolUrl('calendario'), plural(dr, 'repaso', 'repasos')], dc && [toolUrl('tarjetas'), plural(dc, 'tarjeta', 'tarjetas')], tk && [toolUrl('tareas'), plural(tk, 'tarea', 'tareas')], ex && [toolUrl('examenes'), `${esc(ex.name)} · ${relDay(ex.date)}`]].filter(Boolean);
+  const panels = cont + (todo.length ? `<p class="today"><span>Hoy</span>${todo.map(([h, t]) => `<a href="${h}">${t}</a>`).join('')}</p>` : '');
   const cards = S.subjects.map(s => {
     const p = progress(s.files);
     const link = S.offline ? folderUrl(s.key) : '#/' + encodeURIComponent(s.key), ext = S.offline ? ' target="_blank" rel="noopener"' : '';
@@ -1436,11 +1504,10 @@ function homeView() {
   }).join('');
   const list = (arr, empty) => arr.length ? arr.slice(0, 6).map(f => docRow(f)).join('') : `<p class="muted pad">${empty}</p>`;
   V(`<section class="hero"><h1>${esc(CFG.titulo)}</h1><p>${S.offline ? 'No se ha podido leer el índice desde GitHub; usa los enlaces a las carpetas.' : `${plural(pr.total, 'tema', 'temas')} en ${plural(S.subjects.length, 'asignatura', 'asignaturas')} · <b>${pr.pct}%</b> dominado`}</p></section>
-    <div class="kps">${panels}</div>
+    ${panels}
     <div class="sec-h"><h2>Asignaturas</h2><a href="${toolUrl('biblioteca')}">Ver todo ${ico('chev')}</a></div>
     <div class="cards">${cards}</div>
-    <div class="two"><section class="pnl"><div class="sec-h"><h2>${ico('clock')} Recientes</h2><a href="${toolUrl('historial')}">Ver más</a></div>${list(hist, 'Aún no has abierto ningún resumen.')}</section>
-    <section class="pnl"><div class="sec-h"><h2>${ico('star')} Favoritos</h2><a href="${toolUrl('favoritos')}">Ver más</a></div>${list(fv, 'Marca un resumen con ★ para verlo aquí.')}</section></div>
+    ${(() => { const ps = [hist.length && `<section><div class="sec-h"><h2>Recientes</h2><a href="${toolUrl('historial')}">Ver más</a></div>${list(hist.slice(0, 4), '')}</section>`, fv.length && `<section><div class="sec-h"><h2>Favoritos</h2><a href="${toolUrl('favoritos')}">Ver más</a></div>${list(fv.slice(0, 4), '')}</section>`].filter(Boolean); return ps.length ? `<div class="two${ps.length === 1 ? ' one' : ''}">${ps.join('')}</div>` : ''; })()}
     <footer class="foot">Contenido sincronizado con <a href="${REPO}" target="_blank" rel="noopener">el repositorio de GitHub</a> · <a href="#/" data-act="refresh-list">Actualizar lista</a> · <a href="${toolUrl('ayuda')}">Cómo escribir los resúmenes</a></footer>`);
 }
 ACT['refresh-list'] = (el, e) => { e.preventDefault(); store.del('rv-tree-v1'); location.reload(); };
@@ -1532,8 +1599,15 @@ function fillRelated() {
   box.innerHTML = sec('Antes de este tema', 'repeat', pre.map(d => chip(d))) + sec('Después', 'chev', nexts.map(d => chip(d))) + sec('Relacionados', 'link', rel.map(r => chip(r.d, r.why)));
 }
 
-function docToolbar(f, mins) {
-  return `<div class="actions"><a class="btn" href="${ghUrl(f.path)}" target="_blank" rel="noopener">${ico('ext')} GitHub</a><a class="btn" href="${rawUrl(f.path)}" target="_blank" rel="noopener">${ico('code')} .md</a><button class="btn" data-act="copy-link">${ico('link')} Copiar enlace</button><button class="btn" data-act="focus">${ico('eye')} Modo enfoque</button><button class="btn" data-act="print">${ico('print')} Imprimir / PDF</button><button class="btn" data-act="fs-" title="Texto más pequeño" aria-label="Texto más pequeño">A−</button><button class="btn" data-act="fs+" title="Texto más grande" aria-label="Texto más grande">A+</button><span class="meta">${mins} min de lectura</span></div>`;
+function docMenu(f) {
+  const it = (act, icon, label) => `<button class="mi" role="menuitem" data-act="${act}">${ico(icon)}<span>${label}</span></button>`;
+  const tags = [diffBadge(f), typeBadge(f), ...f.tags.map(t => `<button class="bd tg" data-act="tag" data-t="${esc(t)}">#${esc(t)}</button>`)].join('');
+  return `<details class="menu" id="dmenu"><summary class="btn" aria-label="Más acciones">${ico('dots')}<span>Más</span></summary><div class="menu-p">
+    ${it('reviewed', 'check', 'Repasado hoy')}${it('sched', 'calendar', 'Programar repaso')}${it('doc-task', 'tasks', 'Crear tarea')}<hr>
+    ${it('focus', 'eye', 'Modo enfoque (F)')}${it('pomo-open', 'timer', 'Pomodoro (P)')}${it('print', 'print', 'Imprimir / PDF')}${it('copy-link', 'link', 'Copiar enlace')}
+    <a class="mi" href="${ghUrl(f.path)}" target="_blank" rel="noopener">${ico('ext')}<span>Ver en GitHub</span></a><a class="mi" href="${rawUrl(f.path)}" target="_blank" rel="noopener">${ico('code')}<span>Ver Markdown</span></a><hr>
+    <div class="mi-fs"><span>Tamaño del texto</span><span><button class="btn sm" data-act="fs-" aria-label="Texto más pequeño">A−</button><button class="btn sm" data-act="fs+" aria-label="Texto más grande">A+</button></span></div>
+    <hr><div class="mi-tags">${tags}</div></div></details>`;
 }
 async function docView(f, sec) {
   const tok = S.tok;
@@ -1549,10 +1623,9 @@ async function docView(f, sec) {
   const nCards = f.cards.length, nQuiz = f.quiz.length;
   V(`<div class="page" style="--c:${f.s.color}"><article>
     <nav class="crumbs"><a href="#/">Inicio</a> / <a href="#/${encodeURIComponent(f.subj)}">${esc(f.subj)}</a>${f.sub ? ' / ' + esc(f.sub) : ''}</nav>
-    <header class="dh"><div class="dh-b">${subjBadge(f)}${typeBadge(f)}${diffBadge(f)}</div><h1 class="dh-t">${esc(f.title)}</h1>${f.tags.length ? `<div class="dh-g">${f.tags.map(t => `<button class="bd tg" data-act="tag" data-t="${esc(t)}">#${esc(t)}</button>`).join('')}</div>` : ''}</header>
-    <div class="stseg" role="group" aria-label="Estado de estudio">${STATES.map(([k, l]) => `<button data-act="state" data-st="${k}" class="${k}${k === st ? ' on' : ''}" aria-pressed="${k === st}"><span class="dot ${k}"></span>${l}</button>`).join('')}</div>
-    <div class="dh-act"><button class="btn" data-act="fav-doc" aria-pressed="${isFavDoc(f.path)}">${ico('star', isFavDoc(f.path) ? 'fill' : '')}<span>Favorito</span></button><button class="btn" data-act="reviewed">${ico('check')} Repasado hoy</button><button class="btn" data-act="sched">${ico('calendar')} Programar repaso</button><button class="btn" data-act="doc-task">${ico('tasks')} Tarea</button>${nCards ? `<a class="btn" href="${toolUrl('tarjetas', 'doc=' + encodeURIComponent(f.path) + '&go=1')}">${ico('cards')} Tarjetas (${nCards})</a>` : ''}${nCards || nQuiz ? `<a class="btn" href="${toolUrl('quiz', 'doc=' + encodeURIComponent(f.path))}">${ico('quiz')} Autoevaluar</a>` : ''}</div>
-    ${docToolbar(f, mins)}
+    <header class="dh"><div class="dh-b">${subjBadge(f)}<span class="dh-m">${mins} min de lectura</span></div><h1 class="dh-t">${esc(f.title)}</h1></header>
+    <div class="dh-bar"><div class="stseg" role="group" aria-label="Estado de estudio">${STATES.map(([k, l]) => `<button data-act="state" data-st="${k}" class="${k}${k === st ? ' on' : ''}" aria-pressed="${k === st}"><span class="dot ${k}"></span>${l}</button>`).join('')}</div>
+    <div class="dh-act"><button class="btn" data-act="fav-doc" aria-pressed="${isFavDoc(f.path)}">${ico('star', isFavDoc(f.path) ? 'fill' : '')}<span>Favorito</span></button>${nCards ? `<a class="btn" href="${toolUrl('tarjetas', 'doc=' + encodeURIComponent(f.path) + '&go=1')}">${ico('cards')} Tarjetas (${nCards})</a>` : ''}${nCards || nQuiz ? `<a class="btn" href="${toolUrl('quiz', 'doc=' + encodeURIComponent(f.path))}">${ico('quiz')} Autoevaluar</a>` : ''}${docMenu(f)}</div></div>
     <div class="md" id="md"></div>
     <section id="rel"></section>
     <nav class="pn">${prev ? `<a href="${href(prev.path)}"><small>← Anterior</small><span>${esc(prev.title)}</span></a>` : '<span></span>'}${next ? `<a class="nx" href="${href(next.path)}"><small>Siguiente →</small><span>${esc(next.title)}</span></a>` : ''}</nav>
@@ -2085,7 +2158,7 @@ function settingsView() {
   V(`<h1 class="ph">${ico('settings')} Ajustes</h1><p class="sub">Todo lo que guardas (estados, favoritos, exámenes, tareas, tarjetas, estadísticas) vive en este navegador. Haz copias de seguridad para no perderlo.</p>
     <section class="pnl"><h3 class="lh nm">Apariencia</h3><div class="seg3" role="group" aria-label="Tema">${[['auto', 'Sistema'], ['light', 'Claro'], ['dark', 'Oscuro']].map(([k, l]) => `<button data-act="theme" data-t="${k}" class="${themePref === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       <div class="fld"><label for="fsr">Tamaño del texto: <b id="fsv">${fs}px</b></label><input id="fsr" type="range" min="13" max="24" value="${fs}" data-act-input="fs"></div></section>
-    ${syncPanel()}${widthPanel()}
+    ${uiPanel()}${syncPanel()}${widthPanel()}
     <section class="pnl"><h3 class="lh nm">Copia de seguridad</h3><p class="muted">${plural(n, 'bloque de datos guardado', 'bloques de datos guardados')} en este navegador.</p><div class="dh-act"><button class="btn" data-act="export">${ico('download')} Exportar copia</button><label class="btn" tabindex="0">${ico('upload')} Importar copia<input type="file" accept="application/json,.json" id="imp" hidden></label><button class="btn danger" data-act="reset">${ico('trash')} Borrar todos mis datos</button></div></section>
     <section class="pnl"><h3 class="lh nm">Atajos de teclado</h3><dl class="keys">${[['Ctrl + K', 'Paleta de comandos'], ['/', 'Buscar'], ['B', 'Mostrar u ocultar el índice'], ['F', 'Modo enfoque (lectura)'], ['P', 'Pomodoro'], ['← →', 'Resumen anterior / siguiente'], ['Espacio · 1-4', 'Tarjetas: mostrar respuesta · valorar'], ['Esc', 'Cerrar paneles']].map(([k, v]) => `<div><dt><kbd>${k}</kbd></dt><dd>${v}</dd></div>`).join('')}</dl></section>`);
 }
@@ -2431,6 +2504,15 @@ function goalPanel() {
     <div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso del objetivo semanal"><i style="width:${pct}%"></i></div><p class="muted">Esta semana: ${n} de ${g}</p></section>`;
 }
 
+/* ---------- Interfaz minimal / completa ---------- */
+function uiPanel() {
+  const full = store.get('rv-full', 0) === 1;
+  return `<section class="pnl"><h3 class="lh nm">Menú lateral</h3><div class="seg3" role="group" aria-label="Menú lateral">${[[0, 'Minimal'], [1, 'Todas las herramientas']].map(([v, l]) => `<button data-act="ui" data-v="${v}" class="${(full ? 1 : 0) === v ? 'on' : ''}" aria-pressed="${(full ? 1 : 0) === v}">${l}</button>`).join('')}</div>
+    <p class="muted">Minimal muestra solo lo esencial; el resto está en «Más herramientas». Con <kbd>Ctrl</kbd> + <kbd>K</kbd> llegas a cualquier cosa.</p></section>`;
+}
+ACT.ui = el => { store.set('rv-full', +el.dataset.v); renderSide(); rerender(); };
+ACT['pomo-open'] = () => togglePomo(true);
+
 /* ---------- Ancho de lectura ---------- */
 const MW = [[640, 'Estrecho'], [800, 'Normal'], [1000, 'Ancho']];
 const getMw = () => { const v = +store.get('rv-mw', 800); return MW.some(m => m[0] === v) ? v : 800; };
@@ -2562,7 +2644,7 @@ ACT['sel-card'] = () => { const f = S.cur; if (!SEL || !f) return; const a = SEL
 ACT['sel-note'] = () => {
   const f = S.cur; if (!SEL || !f) return;
   const n = getNotes(), cur = n[f.path] ? n[f.path].t : ''; n[f.path] = { t: (cur ? cur + '\n\n' : '') + '> ' + SEL.text + '\n\n', u: Date.now() }; store.set(K.notes, n);
-  getSelection().removeAllRanges(); $('#selbar').hidden = true; paintNotes(f); const ta = $('#noteTa'); if (ta) { ta.scrollIntoView({ block: 'center' }); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  getSelection().removeAllRanges(); $('#selbar').hidden = true; paintNotes(f); $('#notes').open = true; const ta = $('#noteTa'); if (ta) { ta.scrollIntoView({ block: 'center' }); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
 };
 ACT['hl-del'] = el => { const f = S.cur; if (!f) return; const all = getHl(); all[f.path] = (all[f.path] || []).filter(h => h.id !== el.dataset.id); if (!all[f.path].length) delete all[f.path]; store.set(K.hl, all); applyHl(f); paintNotes(f); };
 ACT['hl-card'] = el => { const f = S.cur; const h = f && (getHl()[f.path] || []).find(x => x.id === el.dataset.id); if (h) cardForm(null, { q: '', a: h.t, subj: f.subj, path: f.path }); };
@@ -2574,8 +2656,9 @@ function paintNotes(f) {
 }
 function afterDoc(f) {
   const md = $('#md'); if (!md) return;
-  const sec = document.createElement('section'); sec.className = 'pnl notes'; sec.id = 'notes';
-  sec.innerHTML = `<h3 class="lh nm">${ico('pen')} Mis notas</h3><label class="sr" for="noteTa">Notas personales de este resumen</label><textarea id="noteTa" rows="4" placeholder="Notas personales sobre este resumen…"></textarea><div class="muted" id="noteSt" aria-live="polite"></div><div id="hlList"></div>`;
+  const sec = document.createElement('details'); sec.className = 'pnl notes'; sec.id = 'notes';
+  if (getNotes()[f.path] || (getHl()[f.path] || []).length) sec.open = true;
+  sec.innerHTML = `<summary>${ico('pen')} <span>Mis notas y subrayados</span></summary><label class="sr" for="noteTa">Notas personales de este resumen</label><textarea id="noteTa" rows="4" placeholder="Notas personales sobre este resumen…"></textarea><div class="muted" id="noteSt" aria-live="polite"></div><div id="hlList"></div>`;
   md.insertAdjacentElement('afterend', sec);
   paintNotes(f); applyHl(f);
   let t; const ta = $('#noteTa');
@@ -2719,6 +2802,9 @@ function extraInit() {
     const k = e.key.toLowerCase();
     if (k === 'f' && S.view === 'doc') toggleFocus(); else if (k === 'p') togglePomo();
   });
+  // menú «Más» del resumen: se cierra al elegir algo, al pulsar fuera o con Esc
+  document.addEventListener('click', e => { const m = $('#dmenu'); if (!m || !m.open) return; const mi = e.target.closest('.mi'); if (!m.contains(e.target) || (mi && !e.target.closest('.mi-fs'))) setTimeout(() => { m.open = false; }, 0); });
+  document.addEventListener('keydown', e => { const m = $('#dmenu'); if (e.key === 'Escape' && m && m.open) { m.open = false; const sm = $('summary', m); if (sm) sm.focus(); } });
   watchDialogs();
   // sincronización y conexión
   addEventListener('online', () => { toast('De nuevo en línea'); syncSoon(); });
