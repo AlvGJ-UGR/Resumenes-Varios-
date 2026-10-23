@@ -51,20 +51,20 @@ Un **proceso aleatorio** $X(n,\xi)$ es una función de dos variables: el tiempo 
 
 ### 2.2 Cómo se ve esto en los datos de `signal1`
 
-Es una matriz de **2000 realizaciones × 128 instantes**:
+El fichero binario se lee como una matriz de **128 instantes × 2000 realizaciones** (`128×2000`):
 
 ```
-              n=1   n=2   ...  n=128
-realización 1  x    x     ...   x       <- una fila = una señal en el tiempo
-realización 2  x    x     ...   x
-   ...
-realización 2000 x  x     ...   x
-                ^
-                una columna = 2000 valores de la v.a. X(n)
+              realización 1  realización 2  ...  realización 2000
+n=1                 x              x          ...       x
+n=2                 x              x          ...       x
+...                 ...            ...        ...       ...
+n=128               x              x          ...       x
+^                    una columna = una realización completa
+una fila = 2000 valores de la v.a. X(n) en un instante fijo
 ```
 
-- **Recorrer una fila** es avanzar en el tiempo dentro de una realización → promedio **temporal**.
-- **Recorrer una columna** es mirar los 2000 posibles valores de $X(n)$ → promedio **estadístico**.
+- **Recorrer una columna** es avanzar en el tiempo dentro de una realización → promedio **temporal**.
+- **Recorrer una fila** es mirar los 2000 valores de $X(n)$ en un instante fijo → promedio **estadístico**.
 
 Esta distinción (filas frente a columnas) es la clave de toda la práctica.
 
@@ -140,30 +140,27 @@ Si el proceso es gaussiano, **la media y la autocovarianza lo determinan por com
 
 ## 3. Preparación: cargar los datos y comprobar dimensiones
 
-Los ficheros pueden ser `.mat` o texto. Para no depender del nombre de la variable:
+`signal1` y `signal1ERG` son ficheros binarios de números `single`, por lo que deben leerse con `fread`, no con `load` (que se usa para archivos MAT o datos de texto compatibles).
 
 ```matlab
-S = load('signal1');                 % si es .mat devuelve una estructura
-if isstruct(S)
-    nm = fieldnames(S);              % nombres de las variables dentro del fichero
-    disp(nm)                         % mira cuál es la que contiene los datos
-    X  = S.(nm{1});                  % se coge la primera; cámbiala si hace falta
-else
-    X  = S;                          % si era texto, load devuelve directamente la matriz
-end
-size(X)                              % ¿2000x128 o 128x2000?
+% signal1: 128 instantes x 2000 realizaciones
+f1 = fopen('signal1','r');
+assert(f1 ~= -1, 'No se pudo abrir signal1');
+X = fread(f1,[128,2000],'single');
+fclose(f1);
+
+size(X)     % debe mostrar 128  2000
 ```
 
-**Orientación obligatoria:** filas = realizaciones, columnas = instantes.
+**Convención única de esta guía:** `X(n,r)` es el valor en el instante `n` de la realización `r`. Por tanto, las **filas son instantes** y las **columnas son realizaciones**. Así coincide con la lectura original del fichero y se evita transponer la matriz repetidamente.
 
 ```matlab
-if size(X,1) < size(X,2)             % si viene 128x2000
-    X = X.';                         % se transpone a 2000x128
-end
-[N, Ninst] = size(X);                % N = 2000, Ninst = 128
+[Ninst,Nreal] = size(X);   % Ninst = 128; Nreal = 2000
+assert(Ninst == 128 && Nreal == 2000, ...
+       'Las dimensiones de signal1 no son las esperadas');
 ```
 
-Si no compruebas esto, `mean(X,1)` calculará la media por el lado equivocado y todos los resultados serán incorrectos sin que MATLAB te avise.
+Si tu fichero tiene dimensiones distintas, comprueba el enunciado y la forma en que se generó antes de transponerlo: no conviene adivinar la orientación solo comparando cuál dimensión es mayor.
 
 ---
 
@@ -171,34 +168,34 @@ Si no compruebas esto, `mean(X,1)` calculará la media por el lado equivocado y 
 
 ### 4.1 Qué se calcula
 
-$$\hat m_X(n)=\frac1N\sum_{i=1}^{N}x_i(n),\qquad \hat R_X(n_1,n_2)=\frac1N\sum_{i=1}^{N}x_i(n_1)\,x_i(n_2)$$
+$$\hat m_X(n)=\frac1{N_{real}}\sum_{r=1}^{N_{real}}x_r(n),\qquad \hat R_X(n_1,n_2)=\frac1{N_{real}}\sum_{r=1}^{N_{real}}x_r(n_1)\,x_r(n_2)$$
 
-Son promedios **entre realizaciones, a $n$ fijo**. Como solo tienes $N=2000$ realizaciones, son **estimaciones**: tienen un pequeño error aleatorio.
+Son promedios **entre realizaciones, a $n$ fijo**. Como solo tienes $N_{real}=2000$ realizaciones, son **estimaciones**: tienen un pequeño error aleatorio.
 
 ### 4.2 Código
 
 ```matlab
-mX = mean(X, 1);            % 1x128: media de cada columna (a n fijo)
-RX = (X.' * X) / N;         % 128x128: RX(n1,n2)
+mX = mean(X, 2);             % 128x1: media de cada instante entre realizaciones
+RX = (X * X.') / Nreal;      % 128x128: autocorrelación RX(n1,n2)
 ```
 
-**Por qué `X.'*X/N` calcula la autocorrelación.** El elemento $(n_1,n_2)$ de `X.'*X` es el producto escalar de la columna $n_1$ por la columna $n_2$, es decir $\sum_i x_i(n_1)\,x_i(n_2)$. Dividir entre $N$ lo convierte en promedio. No se resta la media porque la autocorrelación no la resta.
+**Por qué `X*X.'/Nreal` calcula la autocorrelación.** El elemento $(n_1,n_2)$ de `X*X.'` es el producto escalar de la fila $n_1$ por la fila $n_2$, es decir $\sum_r x_r(n_1)x_r(n_2)$. Dividir entre `Nreal` lo convierte en promedio entre realizaciones. No se resta la media: eso se haría para calcular la covarianza.
 
 ### 4.3 Gráfica que piden
 
 Una figura con $m_X(n)$ y con $R_X(n,n+k)$ para $k=0,1,2$ (son las **tres primeras diagonales** de `RX`):
 
 ```matlab
-n  = 1:Ninst;
-R0 = diag(RX, 0);           % RX(n,n),    n = 1..128   (128 valores)
-R1 = diag(RX, 1);           % RX(n,n+1),  n = 1..127   (127 valores)
-R2 = diag(RX, 2);           % RX(n,n+2),  n = 1..126   (126 valores)
+n = 1:Ninst;
+R0 = diag(RX, 0);           % RX(n,n): 128 valores
+R1 = diag(RX, 1);           % RX(n,n+1): 127 valores
+R2 = diag(RX, 2);           % RX(n,n+2): 126 valores
 
 figure; hold on; grid on;
-plot(n,           mX, 'k', 'LineWidth', 1.5);
-plot(1:Ninst,     R0, 'b', 'LineWidth', 1.5);
-plot(1:Ninst-1,   R1, 'r', 'LineWidth', 1.5);
-plot(1:Ninst-2,   R2, 'g', 'LineWidth', 1.5);
+plot(n,         mX, 'k', 'LineWidth', 1.5);
+plot(1:Ninst,   R0, 'b', 'LineWidth', 1.5);
+plot(1:Ninst-1, R1, 'r', 'LineWidth', 1.5);
+plot(1:Ninst-2, R2, 'g', 'LineWidth', 1.5);
 xlabel('n'); ylabel('Valor');
 legend('m_X(n)','R_X(n,n)','R_X(n,n+1)','R_X(n,n+2)');
 title('Media y autocorrelación estadísticas');
@@ -219,12 +216,12 @@ Se comprueban las dos condiciones sobre las curvas:
 
 1. **¿Es $m_X(n)$ aproximadamente constante?** Debería oscilar alrededor de un valor (probablemente cerca de 0) sin tendencia.
 2. **¿Es cada $R_X(n,n+k)$ aproximadamente constante en $n$?** Eso significa que la correlación depende solo de $k$.
-3. **¿Se ordenan las curvas?** En un proceso con correlación que decae con el retardo, $R_X(0)>R_X(1)>R_X(2)$.
+3. **¿Se ordenan las curvas?** Para el AR(1) esperado en esta práctica, la autocorrelación es positiva y decreciente, así que se espera $R_X(0)>R_X(1)>R_X(2)$. No es una propiedad universal de todos los procesos.
 
-**Sobre el ruido de estimación.** Las curvas no serán perfectamente planas, y es normal. Con $N=2000$ realizaciones y datos gaussianos:
+**Sobre el ruido de estimación.** Las curvas no serán perfectamente planas, y es normal. Con $N_{real}=2000$ realizaciones y bajo supuestos gaussianos e independientes entre realizaciones:
 
-- La estimación de la media tiene una desviación del orden de $\sigma/\sqrt N\approx2.2\%\,\sigma$.
-- La estimación de $R_X(0)$ tiene una desviación relativa de $\sqrt{2/N}\approx3.2\%$.
+- La desviación típica de la media muestral en cada instante es aproximadamente $\sigma/\sqrt{N_{real}}\approx2.2\%\,\sigma$.
+- Si la media es cero y las muestras son gaussianas, la desviación típica relativa de la estimación de $R_X(0)$ es aproximadamente $\sqrt{2/N_{real}}\approx3.2\%$.
 
 Por tanto, fluctuaciones de ese orden **sin tendencia** son compatibles con WSS. Lo que sería señal de **no estacionariedad** es una tendencia sistemática (curva que sube, baja o presenta forma periódica).
 
@@ -263,14 +260,14 @@ x = linspace(mu-4*sig, mu+4*sig, 400);
 f = exp(-(x-mu).^2/(2*var60)) / sqrt(2*pi*var60);
 
 figure; hold on; grid on;
-histogram(X(:,n0), 40, 'Normalization', 'pdf');   % histograma de los 2000 valores de X(60)
+histogram(X(n0,:), 40, 'Normalization', 'pdf');   % histograma de los 2000 valores de X(60)
 plot(x, f, 'r', 'LineWidth', 1.5);                 % pdf teórica
 legend('Histograma', 'pdf gaussiana'); xlabel('x'); ylabel('f_{X(60)}(x)');
 ```
 
-Comparar el histograma con la curva teórica **valida** que $X(60)$ es gaussiana.
+Comparar el histograma con la curva gaussiana permite valorar si los datos son **compatibles** con el modelo gaussiano; no demuestra por sí solo la gaussianidad.
 
-> **Sobre el índice.** Se toma $n=60$ como la columna 60 (el primer instante es $n=1$). Si en tu enunciado o en clase el primer instante fuese $n=0$, sería la columna 61. Indícalo en el informe.
+> **Sobre el índice.** Se toma $n=60$ como la fila 60 (el primer instante es $n=1$). Si en tu enunciado o en clase el primer instante fuese $n=0$, sería la columna 61. Indícalo en el informe.
 
 ### 5.2 pdf conjunta de orden 2: $(X(16),X(30))$
 
@@ -301,7 +298,7 @@ f2 = exp(-0.5*sum((D/K2).*D, 2)) / (2*pi*sqrt(det(K2)));
 f2 = reshape(f2, size(x1));
 
 figure; contour(x1, x2, f2, 15); grid on; axis equal;
-hold on; plot(X(1:300,n1), X(1:300,n2), '.', 'MarkerSize', 4);   % algunos datos reales
+hold on; plot(X(n1,1:300), X(n2,1:300), '.', 'MarkerSize', 4);   % algunos datos reales
 xlabel('X(16)'); ylabel('X(30)'); title('pdf conjunta de (X(16), X(30))');
 ```
 
@@ -324,15 +321,18 @@ Ahora hay **una sola realización** de $L=128000$ muestras. Los promedios se hac
 
 $$m_t=\frac1L\sum_{n=1}^{L}x(n),\qquad R_t(k)=\frac1{L-k}\sum_{n=1}^{L-k}x(n)\,x(n+k),\quad k=0,\dots,127$$
 
-**Por qué se divide por $L-k$.** Para un retardo $k$ solo hay $L-k$ parejas $(x(n),x(n+k))$ dentro de la señal. Dividir por ese número da el estimador **insesgado** ($E[R_t(k)]=R_X(k)$). Si se divide por $L$ se obtiene el estimador sesgado, que da PSD siempre no negativa; con $L=128000$ y $k\le127$ la diferencia es despreciable.
+**Por qué se divide por $L-k$.** Para un retardo $k$ solo hay $L-k$ parejas $(x(n),x(n+k))$ dentro de la señal. Bajo estacionariedad, dividir por ese número da el estimador **insesgado** ($E[\hat R_t(k)]=R_X(k)$). Si se divide por $L$ se obtiene el estimador sesgado. Importante: el estimador insesgado no garantiza que la PSD obtenida al truncar la autocorrelación sea no negativa; con $L=128000$ y $k\le127$ la diferencia de normalización es pequeña.
 
 ### 6.2 Código
 
 ```matlab
-S = load('signal1ERG');
-if isstruct(S), nm = fieldnames(S); x = S.(nm{1}); else, x = S; end
+f1 = fopen('signal1ERG','r');
+assert(f1 ~= -1, 'No se pudo abrir signal1ERG');
+x = fread(f1,[128000,1],'single');
+fclose(f1);
 x = x(:);                       % vector columna
-L = length(x);                  % 128000
+L = length(x);                  % debe ser 128000
+assert(L == 128000, 'signal1ERG no contiene 128000 muestras');
 
 mt = mean(x);                   % media temporal
 
@@ -476,97 +476,124 @@ Si las dos curvas coinciden, tienes una validación muy sólida de todo el proce
 
 ## 8. Script completo listo para ejecutar
 
-Copia esto en un archivo `parte2.m` y ajusta los nombres de los ficheros/variables si hace falta.
+Guarda este código como `parte2.m` en la misma carpeta que `signal1` y `signal1ERG`. Los dos ficheros se leen como binarios `single`, según el formato usado en el enunciado. La convención es única: `X(n,r)` = muestra del instante `n` en la realización `r` (`X` mide `128×2000`).
 
 ```matlab
-%% PRÁCTICA 1 - PARTE 2: PROCESOS ALEATORIOS
+%% PRACTICA 1 - PARTE 2: PROCESOS ALEATORIOS
 clear; close all; clc;
-fs = 8000;                                   % frecuencia de muestreo (Hz)
+fs = 8000;                         % frecuencia de muestreo (Hz)
 
-%% ===== a) PROMEDIOS ESTADÍSTICOS (signal1: 2000 realizaciones x 128 instantes) =====
-S = load('signal1');
-if isstruct(S), nm = fieldnames(S); X = S.(nm{1}); else, X = S; end
-if size(X,1) < size(X,2), X = X.'; end       % filas = realizaciones
-[N, Ninst] = size(X);
-fprintf('Realizaciones: %d, instantes: %d\n', N, Ninst);
+%% Carga de ficheros binarios
+f1 = fopen('signal1','r');
+assert(f1 ~= -1, 'No se pudo abrir signal1');
+X = fread(f1,[128,2000],'single');
+fclose(f1);
+[Ninst,Nreal] = size(X);
+assert(Ninst == 128 && Nreal == 2000, ...
+       'signal1 debe contener 128x2000 muestras');
+fprintf('Instantes: %d | Realizaciones: %d\n', Ninst, Nreal);
 
-mX = mean(X, 1);                             % media estadística (1x128)
-RX = (X.' * X) / N;                          % autocorrelación estadística (128x128)
-
-R0 = diag(RX,0);  R1 = diag(RX,1);  R2 = diag(RX,2);
+%% a) Media y autocorrelacion estadisticas
+mX = mean(X,2);                    % 128x1
+RX = (X*X.')/Nreal;                % 128x128
+R0 = diag(RX,0); R1 = diag(RX,1); R2 = diag(RX,2);
 
 figure(1); hold on; grid on;
-plot(1:Ninst,   mX, 'k', 'LineWidth', 1.5);
-plot(1:Ninst,   R0, 'b', 'LineWidth', 1.5);
-plot(1:Ninst-1, R1, 'r', 'LineWidth', 1.5);
-plot(1:Ninst-2, R2, 'g', 'LineWidth', 1.5);
-xlabel('n'); legend('m_X(n)','R_X(n,n)','R_X(n,n+1)','R_X(n,n+2)');
-title('Media y autocorrelación estadísticas');
+plot(1:Ninst,mX,'k','LineWidth',1.5);
+plot(1:Ninst,R0,'b','LineWidth',1.5);
+plot(1:Ninst-1,R1,'r','LineWidth',1.5);
+plot(1:Ninst-2,R2,'g','LineWidth',1.5);
+xlabel('Instante n'); ylabel('Valor');
+legend('m_X(n)','R_X(n,n)','R_X(n,n+1)','R_X(n,n+2)');
+title('Media y diagonales de la autocorrelacion');
 
-fprintf('media(m_X) = %.4f, std(m_X) = %.4f\n', mean(mX), std(mX));
-fprintf('R(k=0): media %.4f std %.4f\n', mean(R0), std(R0));
-fprintf('R(k=1): media %.4f std %.4f\n', mean(R1), std(R1));
-fprintf('R(k=2): media %.4f std %.4f\n', mean(R2), std(R2));
+fprintf('Media de mX = %.5f; desviacion tipica de mX = %.5f\n',mean(mX),std(mX));
+fprintf('R0: media %.5f, desviacion tipica %.5f\n',mean(R0),std(R0));
+fprintf('R1: media %.5f, desviacion tipica %.5f\n',mean(R1),std(R1));
+fprintf('R2: media %.5f, desviacion tipica %.5f\n',mean(R2),std(R2));
+figure(2); imagesc(RX); axis square; colorbar;
+xlabel('n_2'); ylabel('n_1'); title('R_X(n_1,n_2)');
 
-figure(2); imagesc(RX); colorbar; axis square; title('R_X(n_1,n_2)');
-
-%% ===== Punto 2: pdf de orden 1 (n = 60) =====
-n0 = 60;  mu = mX(n0);  var60 = RX(n0,n0) - mX(n0)^2;  sig = sqrt(var60);
-fprintf('X(%d) ~ N(%.4f, %.4f)\n', n0, mu, var60);
-x = linspace(mu-4*sig, mu+4*sig, 400);
-f1 = exp(-(x-mu).^2/(2*var60)) / sqrt(2*pi*var60);
+%% Punto 2: pdf de orden 1, X(60)
+n0 = 60;
+mu = mX(n0);
+var60 = RX(n0,n0)-mX(n0)^2;
+if var60 <= 0, error('La varianza estimada de X(60) no es positiva'); end
+sig = sqrt(var60);
+fprintf('X(%d): media = %.5f, varianza = %.5f\n',n0,mu,var60);
+xx = linspace(mu-4*sig,mu+4*sig,400);
+ff = exp(-(xx-mu).^2/(2*var60))/sqrt(2*pi*var60);
 figure(3); hold on; grid on;
-histogram(X(:,n0), 40, 'Normalization','pdf'); plot(x, f1, 'r', 'LineWidth', 1.5);
-title('pdf de X(60)'); legend('Histograma','pdf gaussiana');
+histogram(X(n0,:),40,'Normalization','pdf');
+plot(xx,ff,'r','LineWidth',1.5);
+xlabel('x'); ylabel('Densidad'); title('PDF de X(60)');
+legend('Histograma','PDF gaussiana estimada');
 
-%% ===== Punto 2: pdf de orden 2 (n1 = 16, n2 = 30) =====
+%% Punto 2: pdf conjunta de (X(16),X(30))
 n1 = 16; n2 = 30;
-m2 = [mX(n1); mX(n2)];
-K2 = [RX(n1,n1)-mX(n1)^2,          RX(n1,n2)-mX(n1)*mX(n2);
-      RX(n2,n1)-mX(n2)*mX(n1),     RX(n2,n2)-mX(n2)^2];
-disp('m ='); disp(m2); disp('K ='); disp(K2);
-fprintf('rho = %.4f\n', K2(1,2)/sqrt(K2(1,1)*K2(2,2)));
-s1 = sqrt(K2(1,1)); s2 = sqrt(K2(2,2));
-[x1,x2] = meshgrid(linspace(m2(1)-4*s1,m2(1)+4*s1,120), linspace(m2(2)-4*s2,m2(2)+4*s2,120));
-D  = [x1(:)-m2(1), x2(:)-m2(2)];
-f2 = reshape(exp(-0.5*sum((D/K2).*D,2))/(2*pi*sqrt(det(K2))), size(x1));
-figure(4); contour(x1,x2,f2,15); grid on; axis equal; hold on;
-plot(X(1:300,n1), X(1:300,n2), '.', 'MarkerSize', 4);
-xlabel('X(16)'); ylabel('X(30)'); title('pdf conjunta');
-
-%% ===== b) PROMEDIOS TEMPORALES (signal1ERG: 1 realización x 128000) =====
-S = load('signal1ERG');
-if isstruct(S), nm = fieldnames(S); xr = S.(nm{1}); else, xr = S; end
-xr = xr(:);  L = length(xr);
-mt = mean(xr);
-Kmax = 127;  Rt = zeros(1, Kmax+1);
-for k = 0:Kmax
-    Rt(k+1) = sum(xr(1:L-k) .* xr(1+k:L)) / (L-k);
+m2 = [mX(n1);mX(n2)];
+K2 = [RX(n1,n1)-mX(n1)^2, RX(n1,n2)-mX(n1)*mX(n2); ...
+      RX(n2,n1)-mX(n2)*mX(n1), RX(n2,n2)-mX(n2)^2];
+disp('Vector de medias:'); disp(m2);
+disp('Matriz de covarianzas:'); disp(K2);
+if min(eig((K2+K2.')/2)) <= 0
+    error('K2 no es definida positiva; revise la estimacion antes de calcular la PDF');
 end
-fprintf('m_t = %.5f\n', mt);
-fprintf('  k     R_t(k)    R_X(k)\n');
-for k = 0:5, fprintf('  %d  %9.4f  %9.4f\n', k, Rt(k+1), mean(diag(RX,k))); end
+rho = K2(1,2)/sqrt(K2(1,1)*K2(2,2));
+fprintf('Coeficiente de correlacion rho = %.5f\n',rho);
+s1 = sqrt(K2(1,1)); s2 = sqrt(K2(2,2));
+[x1,x2] = meshgrid(linspace(m2(1)-4*s1,m2(1)+4*s1,120), ...
+                   linspace(m2(2)-4*s2,m2(2)+4*s2,120));
+D = [x1(:)-m2(1), x2(:)-m2(2)];
+q = sum((D/K2).*D,2);
+f2 = reshape(exp(-0.5*q)/(2*pi*sqrt(det(K2))),size(x1));
+figure(4); contour(x1,x2,f2,15); grid on; hold on;
+plot(X(n1,1:300),X(n2,1:300),'.','MarkerSize',4);
+xlabel('X(16)'); ylabel('X(30)'); title('PDF conjunta estimada');
 
-%% ===== Punto 4: R_t(k) y simetría =====
-Rfull = [fliplr(Rt(2:end)), Rt];
+%% b) Media y autocorrelacion temporales
+f1 = fopen('signal1ERG','r');
+assert(f1 ~= -1, 'No se pudo abrir signal1ERG');
+x = fread(f1,[128000,1],'single');
+fclose(f1);
+x = x(:); L = length(x);
+assert(L == 128000, 'signal1ERG debe contener 128000 muestras');
+mt = mean(x);
+Kmax = 127; Rt = zeros(1,Kmax+1);
+for k = 0:Kmax
+    Rt(k+1) = sum(x(1:L-k).*x(1+k:L))/(L-k);
+end
+fprintf('Media temporal mt = %.5f\n',mt);
+fprintf(' k       Rt(k)       RX(k) estimada\n');
+for k = 0:5
+    fprintf('%2d   %10.5f   %10.5f\n',k,Rt(k+1),mean(diag(RX,k)));
+end
+
+%% Autocorrelacion para retardos negativos
+Rfull = [fliplr(Rt(2:end)),Rt];
 figure(5);
-subplot(2,1,1); stem(0:Kmax, Rt); grid on; title('R_t(k), k = 0..127'); xlabel('k');
-subplot(2,1,2); stem(-Kmax:Kmax, Rfull); grid on; title('R_t(k), k = -127..127'); xlabel('k');
+subplot(2,1,1); stem(0:Kmax,Rt); grid on;
+xlabel('Retardo k'); title('R_t(k), k = 0,...,127');
+subplot(2,1,2); stem(-Kmax:Kmax,Rfull); grid on;
+xlabel('Retardo k'); title('Extension par estimada de R_t(k)');
 
-%% ===== c) PSD =====
-f  = linspace(-fs/2, fs/2, 2001);
-SX = Rt(1) + 2 * cos(2*pi*f(:)*(1:Kmax)/fs) * Rt(2:end).';
-figure(6); plot(f, SX, 'LineWidth', 1.5); grid on;
-xlabel('f (Hz)'); ylabel('S_X(f)'); title('Densidad de potencia espectral');
-fprintf('Potencia: R_t(0) = %.4f, integral de S/fs = %.4f\n', Rt(1), trapz(f,SX)/fs);
+%% c) Estimacion truncada de la PSD mediante Wiener-Khinchin
+f = linspace(-fs/2,fs/2,2001);
+SX = Rt(1) + 2*cos(2*pi*f(:)*(1:Kmax)/fs)*Rt(2:end).';
+figure(6); plot(f,SX,'LineWidth',1.5); grid on;
+xlabel('f (Hz)'); ylabel('S_X(f)'); title('PSD estimada a partir de R_t(k)');
+fprintf('R_t(0) = %.5f; integral de S_X(f)/fs = %.5f\n',Rt(1),trapz(f,SX)/fs);
 
-%% ===== Contraste con AR(1) a1 = -0.7 (opcional) =====
-a1  = -0.7;
-sw2 = Rt(1) * (1 - a1^2);
-Sth = sw2 ./ abs(1 + a1*exp(-1j*2*pi*f/fs)).^2;
-hold on; plot(f, Sth, 'r--', 'LineWidth', 1.5);
-legend('PSD estimada','PSD teórica AR(1)');
+%% Contraste opcional con el modelo AR(1) del guion
+% a1 = -0.7 implica H(z)=1/(1+a1*z^(-1)) = 1/(1-0.7*z^(-1)).
+a1 = -0.7;
+sw2 = Rt(1)*(1-a1^2);
+Sth = sw2./abs(1+a1*exp(-1j*2*pi*f/fs)).^2;
+figure(6); hold on; plot(f,Sth,'r--','LineWidth',1.5);
+legend('PSD estimada','PSD teorica AR(1)');
 ```
+
+**Antes de entregar:** comprueba que los ficheros tienen el tamaño esperado, revisa las gráficas y sustituye las conclusiones modelo por observaciones basadas en tus resultados reales. La PSD construida truncando una autocorrelación insesgada puede tener pequeñas regiones negativas; eso es un efecto del estimador/truncamiento, no una propiedad física de una PSD verdadera.
 
 ---
 
@@ -618,7 +645,7 @@ $R_X(0)=E[X^2]$; también es el área bajo $S_X$ dividida entre $f_s$.
 
 ## 10. Errores típicos
 
-1. **Orientación de la matriz.** Si `signal1` viene como 128×2000 y no la transpones, `mean(X,1)` promedia entre instantes. Mira siempre `size(X)`.
+1. **Orientación de la matriz.** En esta guía `signal1` se lee como `128×2000`: filas = instantes, columnas = realizaciones. Por eso se usa `mean(X,2)`. Comprueba siempre `size(X)`.
 2. **Restar la media en $R_X$.** Eso es covarianza. La autocorrelación no resta la media.
 3. **Dividir $R_t(k)$ entre $L$ en vez de entre $L-k$.** El insesgado usa $L-k$.
 4. **Olvidar el desplazamiento de índices.** $R_t(k)$ está en `Rt(k+1)`.
@@ -626,7 +653,7 @@ $R_X(0)=E[X^2]$; también es el área bajo $S_X$ dividida entre $f_s$.
 6. **Eje de frecuencias.** Debe estar en Hz, de $-4000$ a $4000$, no en rad/muestra ni de $0$ a $1$.
 7. **Afirmar sin matizar.** Con datos finitos se dice «hay indicios de» WSS/ergodicidad.
 8. **No etiquetar** ejes, títulos y leyendas.
-9. **Interpretar $n=60$ sin aclarar el origen de índices** (columna 60 si $n$ empieza en 1).
+9. **Interpretar $n=60$ sin aclarar el origen de índices** (fila 60 si $n$ empieza en 1).
 10. **Confundir correlación y covarianza** al escribir la pdf de orden 2: en $K$ van las covarianzas.
 
 ---
@@ -636,14 +663,14 @@ $R_X(0)=E[X^2]$; también es el área bajo $S_X$ dividida entre $f_s$.
 Para practicar sin tener los ficheros reales (y para comprobar que tu código funciona), genera datos de un AR(1) con $a_1=-0.7$ y pasa por tu código. Debes recuperar $R_X(0)\approx1.96$, $R_X(1)\approx1.37$, $R_X(2)\approx0.96$ si $\sigma_w^2=1$.
 
 ```matlab
-a1 = -0.7;  N = 2000;  Ninst = 128;  burn = 500;   % burn: se descarta el transitorio inicial
+a1 = -0.7;  Nreal = 2000;  Ninst = 128;  burn = 500;
 
-% 2000 realizaciones de 128 muestras
-w = randn(N, Ninst + burn);
-X = filter(1, [1 a1], w, [], 2);       % filtra cada fila (dim = 2)
-X = X(:, burn+1:end);                  % X es 2000 x 128
+% 2000 realizaciones de 128 muestras; filas=instantes, columnas=realizaciones
+w = randn(Ninst + burn, Nreal);
+Xtmp = filter(1, [1 a1], w, [], 1);    % filtra a lo largo de la dimension temporal
+X = Xtmp(burn+1:end,:);               % X queda 128 x 2000
 
-% 1 realización de 128000 muestras
+% 1 realizacion de 128000 muestras
 xr = filter(1, [1 a1], randn(128000 + burn, 1));
 xr = xr(burn+1:end);
 ```
@@ -692,8 +719,8 @@ end
 
 ## 13. Checklist para el examen
 
-- [ ] Cargar datos y **comprobar `size`** (filas = realizaciones).
-- [ ] Calcular `mX = mean(X,1)` y `RX = X.'*X/N`.
+- [ ] Cargar datos y **comprobar `size`** (filas = instantes; columnas = realizaciones).
+- [ ] Calcular `mX = mean(X,2)` y `RX = X*X.'/Nreal` con `X` de tamaño `128×2000`.
 - [ ] Dibujar $m_X(n)$ y las diagonales $k=0,1,2$ de $R_X$; **razonar WSS**.
 - [ ] pdf de $X(60)$: media y varianza $=R_X(60,60)-m_X(60)^2$; fórmula gaussiana.
 - [ ] pdf conjunta de $(X(16),X(30))$: $\mathbf m$, $K$ (con covarianzas), fórmula bidimensional y comentario de $\rho$.
