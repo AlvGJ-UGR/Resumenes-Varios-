@@ -7,6 +7,8 @@
 > - Las magnitudes en negrita son vectores. Los fasores y los campos instantáneos se distinguen por el contexto.
 > - La onda plana se propaga, salvo que se indique lo contrario, en la dirección $+z$ con $\mathbf{E}$ en $x$ y $\mathbf{H}$ en $y$.
 > - Si tu profesor usa $e^{-i\omega t}$ (convenio de física), cambia $j\to -i$ y revisa los signos de la polarización y de la parte imaginaria de $\varepsilon_c$.
+> - **Leyenda:** ⚪ = tema que **no entra en el próximo parcial** (se deja apuntado por si acaso). Todo lo demás sí entra.
+> - Versión ampliada: se han añadido las recetas y los problemas tipo vistos en clase, las prácticas de laboratorio y el repaso del Apéndice A (secciones 4.4, 5, 6.4, 9, 10.5 y 13–16). Las fórmulas sueltas están además en `Formulario.md`.
 
 ---
 
@@ -28,17 +30,24 @@
    - [4.1 Parámetros de propagación](#41-parámetros-de-propagación)
    - [4.2 Impedancia característica del medio](#42-impedancia-característica-del-medio)
    - [4.3 Relación de estructura de la onda](#43-relación-de-estructura-de-la-onda)
+   - [4.4 Receta: escribir E(z,t) y H(z,t)](#44-receta-escribir-ezt-y-hzt)
 5. [Teorema de Poynting](#5-teorema-de-poynting)
 6. [Incidencia normal sobre una discontinuidad](#6-incidencia-normal-sobre-una-discontinuidad)
    - [6.1 Condiciones de contorno](#61-condiciones-de-contorno)
    - [6.2 Coeficientes de reflexión y transmisión](#62-coeficientes-de-reflexión-y-transmisión)
    - [6.3 Balance de potencia](#63-balance-de-potencia)
+   - [6.4 Incidencia sobre un medio con pérdidas](#64-incidencia-sobre-un-medio-con-pérdidas-p-ej-aire--agua-de-mar)
 7. [Concepto de impedancia de onda](#7-concepto-de-impedancia-de-onda)
 8. [Onda estacionaria](#8-onda-estacionaria)
-9. [Adaptador en λ/4](#9-adaptador-en-λ4)
+9. [Lámina de espesor d y adaptador en λ/4](#9-lámina-de-espesor-d-y-adaptador-en-λ4)
+   - 9.1 Lámina · 9.2 Reflexiones múltiples · 9.3 Adaptador λ/4
 10. [Polarización](#10-polarización)
 11. [Tabla resumen de fórmulas](#11-tabla-resumen-de-fórmulas)
 12. [Errores típicos](#12-errores-típicos)
+13. [Prácticas de laboratorio](#13-prácticas-de-laboratorio)
+14. [Problemas tipo resueltos](#14-problemas-tipo-resueltos)
+15. [Repaso matemático (Apéndice A)](#15-repaso-matemático-apéndice-a)
+16. [⚪ Fuera del parcial](#16--fuera-del-parcial)
 
 ---
 
@@ -168,7 +177,7 @@ En régimen armónico, derivar respecto al tiempo equivale a multiplicar por $j\
 
 ## 2. Ecuaciones constitutivas del medio
 
-Las cuatro ecuaciones de Maxwell tienen 6 incógnitas vectoriales ($\mathbf{E},\mathbf{D},\mathbf{H},\mathbf{B},\mathbf{J}$ y las fuentes). Faltan ecuaciones: las **relaciones constitutivas** describen cómo responde el material a los campos y cierran el sistema.
+Las cuatro ecuaciones de Maxwell involucran cinco campos vectoriales ($\mathbf{E},\mathbf{D},\mathbf{H},\mathbf{B},\mathbf{J}$) y no bastan para determinarlos. Faltan ecuaciones: las **relaciones constitutivas** describen cómo responde el material a los campos y cierran el sistema.
 
 **Medio lineal, homogéneo, isótropo y no dispersivo (el caso del curso):**
 
@@ -327,6 +336,16 @@ Ejemplos:
 
 > Un conductor perfecto ($\sigma\to\infty$) tiene $\delta_s\to0$: el campo no penetra y las corrientes son puramente superficiales.
 
+**Reglas prácticas (aplicar siempre en este orden)**
+
+1. Calcular $\tan\delta=\sigma/\omega\varepsilon$ a la frecuencia del problema.
+2. Si $\tan\delta\ll1$ (orientativo: $<0{,}1$) → buen dieléctrico; si $\tan\delta\gg1$ (orientativo: $>10$) → buen conductor; si es intermedio, usar las expresiones exactas de la sección 3.2.
+3. Al terminar, **comprobar** que la hipótesis se cumple.
+
+Relaciones útiles en buen conductor: $\lambda=2\pi/\beta=2\pi\delta_s$; $\eta_c=\dfrac{1+j}{\sigma\delta_s}$; frecuencia para una $\delta_s$ dada: $f=\dfrac{1}{\pi\mu\sigma\delta_s^2}$. La amplitud cae al 1 % a $z_{1\%}=\ln100/\alpha\approx4{,}6\,\delta_s$. Pérdida en dB tras una distancia $d$: $8{,}686\,\alpha d$.
+
+Casos resueltos en la sección 14 (agua de mar a 50 MHz: $\tan\delta\approx20$; para $\delta_s=20$ m: $f\approx158$ Hz).
+
 ---
 
 ## 4. Propagación de ondas planas
@@ -350,6 +369,8 @@ $$v_g=\frac{d\omega}{d\beta}$$
 
 En un medio no dispersivo $v_g=v_p$. En un medio dispersivo (por ejemplo con pérdidas) difieren, y la forma de la señal se deforma al propagarse.
 
+**Clasificación:** dispersión **normal** si $v_g<v_p$; **anómala** si $v_g>v_p$; **sin dispersión** si $v_g=v_p$ (el vacío no es dispersivo: $v_p=v_g=c$).
+
 **Sentido de propagación.** El factor $e^{-\gamma z}$ describe propagación hacia $+z$ (con atenuación). El factor $e^{+\gamma z}$ describe propagación hacia $-z$.
 
 ### 4.2 Impedancia característica del medio
@@ -372,7 +393,7 @@ Para un medio no magnético: $\eta=\eta_0/\sqrt{\varepsilon_r}$.
 
 $$\eta_c=|\eta_c|e^{j\theta_\eta},\qquad|\eta_c|=\frac{\sqrt{\mu/\varepsilon}}{\left[1+\tan^2\delta\right]^{1/4}},\qquad\theta_\eta=\frac{\delta}{2}\in[0^\circ,45^\circ]$$
 
-donde $\delta=\arctan(\sigma/\omega\varepsilon)$. Entonces **$\mathbf{E}$ adelanta a $\mathbf{H}$ en $\theta_\eta$ radianes**. En un buen conductor $\theta_\eta\to45^\circ$ y la impedancia es muy baja ($|\eta_c|\ll\eta_0$): el campo eléctrico es pequeño frente al magnético (es la razón por la que un conductor "cortocircuita" el campo eléctrico).
+donde $\delta=\arctan(\sigma/\omega\varepsilon)$. Entonces **$\mathbf{E}$ adelanta a $\mathbf{H}$ un ángulo $\theta_\eta$**. En un buen conductor $\theta_\eta\to45^\circ$ y la impedancia es muy baja ($|\eta_c|\ll\eta_0$): el campo eléctrico es pequeño frente al magnético (es la razón por la que un conductor "cortocircuita" el campo eléctrico).
 
 **Analogía con líneas de transmisión:** $\eta$ juega el papel de $Z_0$, $\mathbf{E}$ el de la tensión y $\mathbf{H}$ el de la corriente.
 
@@ -396,6 +417,33 @@ $$\boxed{\mathbf{H}=\frac{1}{\eta}\,\hat{\mathbf{k}}\times\mathbf{E}\qquad\mathb
 **Energía en una onda plana sin pérdidas.** La densidad de energía eléctrica y magnética son **iguales** en todo punto: $w_e=\tfrac12\varepsilon E^2=\tfrac12\mu H^2=w_m$. Las energías están equilibradas, como en un oscilador en el que se intercambia energía entre dos formas.
 
 > Las relaciones de estructura valen para cada onda **plana** por separado. Cuando hay una superposición (onda estacionaria), los campos pueden no estar en fase ni ser proporcionales con $\eta$ (ver secciones 7 y 8).
+
+### 4.4 Receta: escribir E(z,t) y H(z,t)
+
+1. **Clasificar el medio** con $\tan\delta$ y obtener $\gamma=\alpha+j\beta$ y $\eta$ (o $\eta_c$). Sin pérdidas: $n=\sqrt{\mu_r\varepsilon_r}$, $v_p=c/n$, $\beta=\omega/v_p$, $\lambda=2\pi/\beta$.
+2. **Amplitud y fase inicial.** Si el enunciado dice «el campo es máximo en $t=t_1$, $z=z_1$», el argumento del coseno vale 0 ahí: $\varphi_0=-\omega t_1+\beta z_1$. Truco: en $t=T/4$, $\omega t=\pi/2$; en $z=\lambda/4$, $\beta z=\pi/2$.
+3. **Campo eléctrico** (instantáneo y fasor):
+
+$$\mathbf{E}(z,t)=E_0e^{-\alpha z}\cos(\omega t-\beta z+\varphi_0)\,\hat{\mathbf{e}},\qquad\mathbf{E}(z)=E_0e^{j\varphi_0}e^{-\gamma z}\,\hat{\mathbf{e}}$$
+
+4. **Campo magnético:** dirección $\hat{\mathbf{h}}=\hat{\mathbf{k}}\times\hat{\mathbf{e}}$ (comprobar que $\mathbf{E}\times\mathbf{H}$ sale en $\hat{\mathbf{k}}$), módulo $E_0/|\eta|$ y fase $\varphi_0-\theta_\eta$:
+
+$$\mathbf{H}(z,t)=\frac{E_0}{|\eta|}e^{-\alpha z}\cos(\omega t-\beta z+\varphi_0-\theta_\eta)\,\hat{\mathbf{h}}\qquad(\theta_\eta=0\text{ sin pérdidas})$$
+
+**Ejemplo A** ($\varepsilon_r=4$, $\mu_r=1$, 300 MHz, propagación en $+\hat{\mathbf{y}}$, $\mathbf{E}$ en $\hat{\mathbf{x}}$, máximo de 1 V/m en $t=T/4$, $y=\lambda/4$):
+$n=2$, $v_p=1{,}5\cdot10^8$ m/s, $\omega=6\pi\cdot10^8$ rad/s, $\beta=4\pi$ rad/m, $\lambda=0{,}5$ m. La condición da $\varphi_0=-\pi/2+\pi/2=0$. $\eta=\eta_0/2=60\pi\ \Omega$ y $\hat{\mathbf{y}}\times\hat{\mathbf{x}}=-\hat{\mathbf{z}}$:
+
+$$\mathbf{E}(y,t)=\cos(6\pi10^8t-4\pi y)\,\hat{\mathbf{x}}\ \text{V/m},\qquad\mathbf{E}(y)=e^{-j4\pi y}\hat{\mathbf{x}}$$
+
+$$\mathbf{H}(y,t)=-\frac{1}{60\pi}\cos(6\pi10^8t-4\pi y)\,\hat{\mathbf{z}}\ \text{A/m}\ (5{,}31\ \text{mA/m}),\qquad\mathbf{H}(y)=-\frac{1}{60\pi}e^{-j4\pi y}\hat{\mathbf{z}}$$
+
+(Si se pregunta por «$\varepsilon=4\varepsilon_0$», eso significa $\varepsilon_r=4$: $\varepsilon_0$ es la constante del vacío y nunca vale 4.)
+
+**Ejemplo B** (medio con $\varepsilon_r=9$, $\mu_r=1$, 10 GHz, propagación en $+z$, $E_x=3E_y$, amplitud total $1\ \mu$V/m): $n=3$, $v_p=10^8$ m/s, $\beta=\omega/v_p=628{,}3$ rad/m, $\lambda=1$ cm. Como $E_0^2=E_{x0}^2+E_{y0}^2=10E_{y0}^2$: $E_{y0}=0{,}316$ y $E_{x0}=0{,}949\ \mu$V/m.
+
+$$\mathbf{E}(z,t)=(0{,}949\,\hat{\mathbf{x}}+0{,}316\,\hat{\mathbf{y}})\cos(2\pi10^{10}t-628{,}3\,z)\ \mu\text{V/m}$$
+
+Componentes en fase → polarización **lineal**, inclinada $\arctan(1/3)=18{,}4^\circ$ respecto a $x$.
 
 ---
 
@@ -457,6 +505,14 @@ $$\langle\mathbf{S}\rangle=\frac{|E_0|^2}{2|\eta_c|}\,e^{-2\alpha z}\cos\theta_\
 
 La potencia decae como $e^{-2\alpha z}$ y $\cos\theta_\eta$ refleja que parte del flujo es reactivo. Con ondas estacionarias de reflexión total, $\langle\mathbf{S}\rangle=0$: hay energía almacenada, pero no se transporta potencia neta.
 
+### Densidad de potencia y amplitud de campo
+
+Para una onda plana progresiva **sin pérdidas** (amplitudes de pico):
+
+$$S=\frac{E_0^2}{2\eta}=\frac{\eta H_0^2}{2}\quad\Rightarrow\quad E_0=\sqrt{2\eta S},\qquad H_0=\sqrt{\frac{2S}{\eta}}$$
+
+Con valores eficaces: $S=E_{ef}^2/\eta$. La potencia que atraviesa un área $A$ es $P=S\,A$. **Ejemplo:** $S=100$ W/m² en el aire → $E_0=\sqrt{2\cdot377\cdot100}=274{,}6$ V/m y $H_0=0{,}728$ A/m. Es el paso previo para hallar las amplitudes reflejada y transmitida en una interfaz (sección 6).
+
 ---
 
 ## 6. Incidencia normal sobre una discontinuidad
@@ -505,6 +561,8 @@ $$\boxed{\Gamma=\frac{\eta_2-\eta_1}{\eta_2+\eta_1}\qquad\tau=\frac{2\eta_2}{\et
 
 $$\Gamma=\frac{188{,}5-377}{188{,}5+377}=-\frac13,\qquad\tau=\frac23$$
 
+**Conductor perfecto:** además de $\Gamma=-1$ y $\tau=0$, el campo magnético tangencial se **duplica** en la superficie ($H(0)=2H_i$) y aparece una corriente superficial $\lvert\mathbf{J}_s\rvert=2H_i$.
+
 ### 6.3 Balance de potencia
 
 Con medios sin pérdidas, la potencia incidente, reflejada y transmitida (por unidad de área) cumplen:
@@ -514,6 +572,24 @@ $$\frac{P_r}{P_i}=|\Gamma|^2\qquad\frac{P_t}{P_i}=\frac{\eta_1}{\eta_2}|\tau|^2=
 Es decir $|\Gamma|^2+\dfrac{\eta_1}{\eta_2}\tau^2=1$ (**conservación de la energía**). Nótese que **la potencia transmitida no es $|\tau|^2$**: hay que corregir por el cambio de impedancia.
 
 Siguiendo el ejemplo: reflexión $|\Gamma|^2=1/9\approx11{,}1\%$; transmisión $\dfrac{377}{188{,}5}\cdot\dfrac49=\dfrac89\approx88{,}9\%$, y la suma es 1.
+
+### 6.4 Incidencia sobre un medio con pérdidas (p. ej. aire → agua de mar)
+
+Se usa la misma fórmula con $\eta_2=\eta_c$ **compleja**, de modo que $\Gamma$ y $\tau$ son complejos ($\tau=1+\Gamma$ sigue valiendo):
+
+$$\tau=\frac{2\eta_c}{\eta_c+\eta_1}=|\tau|e^{j\varphi_\tau}$$
+
+El campo transmitido arranca en $z=0^+$ con amplitud $|\tau|E_i$ y fase $\varphi_\tau$, y luego se atenúa:
+
+$$E_t(z,t)=|\tau|E_ie^{-\alpha z}\cos(\omega t-\beta z+\varphi_\tau)\,\hat{\mathbf{e}},\qquad H_t(z,t)=\frac{|\tau|E_i}{|\eta_c|}e^{-\alpha z}\cos(\omega t-\beta z+\varphi_\tau-\theta_\eta)\,\hat{\mathbf{h}}$$
+
+**Balance de potencia** (medio 1 sin pérdidas):
+
+$$\frac{P_r}{P_i}=|\Gamma|^2,\qquad\frac{P_t}{P_i}=\frac{\eta_1}{|\eta_c|}|\tau|^2\cos\theta_\eta=1-|\Gamma|^2$$
+
+Si el medio 2 es buen conductor ($|\eta_c|\ll\eta_1$): $\Gamma\approx-1$, $\tau\approx2\eta_c/\eta_1\ll1$ y casi toda la potencia se refleja (aire→agua de mar a 50 MHz: 92,7 % reflejada y 7,3 % transmitida). El campo transmitido penetra solo del orden de $\delta_s$.
+
+> ⚪ Incidencia **oblicua**, ángulo de Brewster y polarización paralela: no entran en este parcial (sección 16).
 
 ---
 
@@ -590,7 +666,39 @@ Es un producto de una función del espacio por una del tiempo: **no hay propagac
 
 ---
 
-## 9. Adaptador en λ/4
+## 9. Lámina de espesor $d$ y adaptador en λ/4
+
+### 9.1 Lámina entre dos semiespacios (medio 1 | lámina | medio 3)
+
+Una onda incide desde el medio 1 sobre una lámina (medio 2, espesor $d$) y detrás hay un medio 3 (normalmente el mismo que el 1, p. ej. aire). Mirando desde el medio 1, todo lo que hay detrás de la cara de entrada equivale a una impedancia de entrada (transformación de la sección 7 aplicada a la lámina):
+
+$$Z_{in}=\eta_2\,\frac{\eta_3+j\eta_2\tan\beta_2d}{\eta_2+j\eta_3\tan\beta_2d},\qquad\Gamma_{in}=\frac{Z_{in}-\eta_1}{Z_{in}+\eta_1}$$
+
+Con $\eta_3=\eta_1$ (misma sustancia a ambos lados) y lámina **sin pérdidas**:
+
+| Espesor | $Z_{in}$ | Resultado |
+|---|---|---|
+| $d=n\lambda_2/2$ | $\eta_1$ | $\Gamma_{in}=0$: lámina **transparente** |
+| $d=(2n+1)\lambda_2/4$ | $\eta_2^2/\eta_1$ | $\lvert\Gamma_{in}\rvert=\dfrac{\lvert\eta_1^2-\eta_2^2\rvert}{\eta_1^2+\eta_2^2}=\dfrac{\varepsilon_r-1}{\varepsilon_r+1}$: reflexión **máxima** |
+
+con $\lambda_2=\lambda_0/\sqrt{\varepsilon_{r2}}$ (longitud de onda **dentro** de la lámina) y $\varepsilon_r=\varepsilon_{r2}/\varepsilon_{r1}$.
+
+### 9.2 Lámina con pérdidas: reflexiones múltiples
+
+Dentro de la lámina la onda rebota entre las dos caras. Sumando todos los rebotes (serie geométrica), la transmisión de amplitud total es
+
+$$\tau_{tot}=\frac{\tau_{12}\,\tau_{23}\,e^{-\gamma_2d}}{1-\Gamma_{21}\Gamma_{23}\,e^{-2\gamma_2d}}$$
+
+y con medio 3 = medio 1 ($\Gamma_{21}=\Gamma_{23}=\frac{\eta_1-\eta_2}{\eta_1+\eta_2}$, $\tau_{12}=\frac{2\eta_2}{\eta_1+\eta_2}$, $\tau_{21}=\frac{2\eta_1}{\eta_1+\eta_2}$):
+
+$$\tau_{tot}=\frac{\tau_{12}\tau_{21}\,e^{-\gamma_2d}}{1-\Gamma_{21}^2\,e^{-2\gamma_2d}}$$
+
+- **Numerador:** paso directo (entra, atraviesa, sale). **Denominador:** corrección por los infinitos rebotes internos.
+- **Comprobación:** sin pérdidas y $d=n\lambda_2/2$ resulta $\tau_{tot}=1$.
+- Detrás de la lámina, en aire, la amplitud **ya no cambia** con la distancia al receptor.
+- Con $d=n\lambda_2/2$ los rebotes suman **en fase**, así que $\tau_{tot}$ es mayor que el paso directo (ejemplo en la sección 14).
+
+### 9.3 Adaptador en λ/4
 
 **Problema.** Adaptar dos medios con impedancias distintas $\eta_1$ y $\eta_3$ para eliminar la reflexión. Se **intercala una capa de un tercer medio** de impedancia $\eta_2$ y espesor $d$.
 
@@ -632,7 +740,7 @@ $$n_2=\sqrt{n_1n_3}\;\Longleftrightarrow\;\varepsilon_{r2}=\sqrt{\varepsilon_{r1
 - Solo **funciona perfectamente a una frecuencia** ($d=\lambda_2/4$) y en incidencia normal. Fuera de ella aparece $\Gamma\neq0$: es un adaptador **de banda estrecha**.
 - Se necesita un material con la $\varepsilon_r$ exacta, que a veces no existe (se aproxima).
 - **Mejora de ancho de banda:** se emplean varias secciones $\lambda/4$ en cascada (transformadores binomiales o de Chebyshev).
-- En incidencia oblicua el desfase depende del ángulo y la adaptación se degrada.
+- En incidencia oblicua el desfase depende del ángulo y la adaptación se degrada (⚪ incidencia oblicua: no entra).
 
 **Aplicaciones:** recubrimientos antirreflectantes ópticos (capa de MgF$_2$, $n\approx1{,}38$, sobre vidrio, $n\approx1{,}5$), radomos, lentes dieléctricas, adaptación de antenas y de líneas de transmisión (mismo principio con $Z_0=\sqrt{Z_{01}Z_{03}}$).
 
@@ -704,7 +812,7 @@ $$\tan2\tau=\frac{2E_1E_2\cos\delta}{E_1^2-E_2^2}$$
 
 $$\hat{\mathbf{x}}=\tfrac12\left[(\hat{\mathbf{x}}-j\hat{\mathbf{y}})+(\hat{\mathbf{x}}+j\hat{\mathbf{y}})\right]$$
 
-- **Reflexión con inversión de sentido.** Al reflejarse con incidencia normal en un conductor perfecto, la onda circular cambia su sentido de giro (RHCP pasa a LHCP) respecto de su dirección de propagación, porque se invierte el sentido de propagación pero no el sentido de rotación del campo tras la inversión de fase. Este hecho se utiliza en radar para distinguir blancos.
+- **Reflexión con inversión de sentido.** En una reflexión normal sobre un conductor perfecto ($\Gamma=-1$) el campo cambia de signo, pero el sentido de giro de su extremo en el plano $xy$ **no cambia**; como la onda ahora viaja en $-z$, respecto de su nueva dirección de propagación el giro es el contrario: **RHCP pasa a LHCP** (y viceversa). Se aprovecha en radar para distinguir blancos.
 - **Pérdida por desacoplo de polarización.** Entre una onda con polarización $\hat{\boldsymbol\rho}_w$ y una antena receptora con polarización $\hat{\boldsymbol\rho}_a$, la fracción de potencia recibida es
 
 $$\text{PLF}=\left|\hat{\boldsymbol\rho}_w\cdot\hat{\boldsymbol\rho}_a^{\,*}\right|^2$$
@@ -718,6 +826,18 @@ Por ejemplo, dos lineales cruzadas (90°) dan $\text{PLF}=0$, y una circular rec
 | Lineal | cualquiera | $0$ ó $\pi$ | Segmento |
 | Circular | $1$ | $\pm\pi/2$ | Circunferencia |
 | Elíptica | general | general | Elipse |
+
+### 10.5 Ejemplos resueltos
+
+**(a) Circular a derechas + circular a izquierdas de igual amplitud $E_0$** (ambas hacia $+z$, $\theta=\omega t-\beta z$):
+
+$$\mathbf{E}_R=E_0(\cos\theta\,\hat{\mathbf{x}}+\sin\theta\,\hat{\mathbf{y}}),\qquad\mathbf{E}_L=E_0(\cos\theta\,\hat{\mathbf{x}}-\sin\theta\,\hat{\mathbf{y}})$$
+
+$$\mathbf{E}_R+\mathbf{E}_L=2E_0\cos(\omega t-\beta z)\,\hat{\mathbf{x}}\ \Rightarrow\ \text{polarización lineal en }\hat{\mathbf{x}}\text{, amplitud }2E_0$$
+
+En fasores: $E_0(\hat{\mathbf{x}}-j\hat{\mathbf{y}})+E_0(\hat{\mathbf{x}}+j\hat{\mathbf{y}})=2E_0\hat{\mathbf{x}}$. Las componentes en $\hat{\mathbf{y}}$ se cancelan siempre (giran en sentidos opuestos) y las de $\hat{\mathbf{x}}$ se suman. Con amplitudes distintas el resultado sería **elíptico**.
+
+**(b) $E_x=3E_y$ con amplitud total $E_0$:** $E_{y0}=E_0/\sqrt{10}$, $E_{x0}=3E_0/\sqrt{10}$, en fase → **lineal**, a $18{,}4^\circ$ del eje $x$ (ejemplo B de la sección 4.4).
 
 ---
 
@@ -744,6 +864,11 @@ Por ejemplo, dos lineales cruzadas (90°) dan $\text{PLF}=0$, y una circular rec
 | Transformación de impedancia | $Z(d)=\eta_1\dfrac{\eta_2+j\eta_1\tan\beta_1d}{\eta_1+j\eta_2\tan\beta_1d}$ |
 | Adaptador $\lambda/4$ | $d=\lambda_2/4$, $\eta_2=\sqrt{\eta_1\eta_3}$ |
 | Polarización circular | $E_1=E_2$, $\delta=\pm\pi/2$ |
+| Amplitud desde potencia | $E_0=\sqrt{2\eta S}$, $H_0=\sqrt{2S/\eta}$ |
+| Medio con pérdidas: $E_t$, $H_t$ | $\lvert\tau\rvert E_ie^{-\alpha z}\cos(\omega t-\beta z+\varphi_\tau)$; $H$ con fase $-\theta_\eta$ |
+| Lámina sin pérdidas | $d=n\lambda_2/2\Rightarrow\Gamma=0$; $d=(2n+1)\lambda_2/4\Rightarrow\lvert\Gamma\rvert=\frac{\varepsilon_r-1}{\varepsilon_r+1}$ |
+| Lámina con pérdidas | $\tau_{tot}=\dfrac{\tau_{12}\tau_{21}e^{-\gamma d}}{1-\Gamma_{21}^2e^{-2\gamma d}}$ |
+| Buen conductor | $\lambda=2\pi\delta_s$, $f=1/(\pi\mu\sigma\delta_s^2)$, $z_{1\%}=4{,}6\,\delta_s$ |
 
 ---
 
@@ -758,3 +883,112 @@ Por ejemplo, dos lineales cruzadas (90°) dan $\text{PLF}=0$, y una circular rec
 7. **Aplicar las aproximaciones de buen conductor/dieléctrico sin comprobar $\tan\delta$** ($\gg1$ o $\ll1$) a la frecuencia dada.
 8. **Dar el sentido de giro sin decir el convenio** (IEEE u óptica) ni el signo de la dependencia temporal.
 9. **Mezclar unidades de atenuación:** $\alpha$ está en Np/m; para dB/m se multiplica por $8{,}686$.
+10. **Escribir $\varepsilon_0=4$:** «$\varepsilon=4\varepsilon_0$» significa $\varepsilon_r=4$; $\varepsilon_0$ es una constante.
+11. **Usar $\eta$ real en un medio con pérdidas:** hay que usar $\eta_c$ compleja (módulo y fase), y restar $\theta_\eta$ a la fase de $\mathbf{H}$.
+12. **Olvidar la fase de $\tau$** al escribir el campo transmitido en un medio con pérdidas.
+13. **Calcular $\mathbf{H}$ sin comprobar la dirección** con $\hat{\mathbf{k}}\times\hat{\mathbf{E}}$ y con $\mathbf{E}\times\mathbf{H}\parallel\hat{\mathbf{k}}$.
+14. **Usar $\lambda_0$ en vez de $\lambda_2$** al decidir si una lámina es $\lambda/2$ o $\lambda/4$.
+15. **Ignorar los rebotes internos** de una lámina con pérdidas: el paso directo no es el resultado final.
+16. **En las prácticas, tratar la lectura del voltímetro como campo:** $V\propto E^2$, la amplitud es $\sqrt V$.
+
+---
+
+## 13. Prácticas de laboratorio
+
+Montaje común: emisor de microondas (klystron, $f=9{,}456$ GHz, $\lambda=3{,}18$ cm) y receptor con diodo detector. **El diodo da una tensión proporcional al cuadrado del campo:** $V\propto E^2$, así que la amplitud es $\sqrt V$ y las razones de campo se calculan con $\sqrt{V_1/V_2}$.
+
+### 13.1 Práctica 1: interferencias (onda estacionaria frente a una pantalla metálica)
+
+- Incidente + reflejada ($\Gamma=-1$): $E_{tot}=-2jE_i\sin(kx)$; en el tiempo $2E_i\sin kx\sin\omega t$. Mínimos en $x=n\lambda/2$; máximo–mínimo consecutivos a $\lambda/4$.
+- $V_{norm}=V/V_{max}=\sin^2[k(x-x_{min})]$; se representa $\sqrt{V_{norm}}=\lvert\sin[k(x-x_{min})]\rvert$ frente a $x$.
+- **Regresión** de las posiciones de mínimos y máximos consecutivos (numerados $m=0,1,2,\dots$): $x(m)=x_0\pm m\lambda/4$ → $\lambda=4\cdot|\text{pendiente}|$ y $f=c/\lambda$.
+- **Contraste:** $S=\sqrt{V_{max}/V_{min}}$. En teoría $S\to\infty$ (mínimos nulos); en la práctica empeora al alejarse de la pantalla (deja de valer la aproximación de onda plana).
+- **Resultados obtenidos:** $x(m)=40{,}57+7{,}898\,m$ mm ($R^2=0{,}9995$) → $\lambda=3{,}159$ cm (error 0,7 %) y $f=9{,}50$ GHz (error 0,4 %). Mínimos casi nulos cerca de la pantalla ($S\approx5$ con $m=0,1$ y muy mayor con los mínimos de 0 mV); a $m=16$–$18$ los mínimos suben a 7,6–12 mV y $S\approx3{,}9$–$3{,}3$.
+
+### 13.2 Práctica 2: reflexión y transmisión
+
+- **Transmisión:** $\lvert T\rvert=\sqrt{V_{trans}/V_{directo}}$. Placa metálica y rejilla con hilos paralelos al campo: $T\approx0$; dieléctricos: $0<T<1$ (menor $\varepsilon_r$ → mayor transmisión). Un $T>1$ indica una medida errónea.
+- **Lámina:** $S=\sqrt{V_{max}/V_{min}}$, $\lvert\Gamma_{eq}\rvert=\dfrac{S-1}{S+1}$.
+- **Permitividad:** exacta resolviendo $\lvert\Gamma_{eq}(d)\rvert$ con $Z_{in}(d)$ (ecuación trascendente en $\varepsilon_r$, $d=4$ mm); si $d\approx\lambda_2/4$: $\varepsilon_r=\dfrac{1+\lvert\Gamma\rvert}{1-\lvert\Gamma\rvert}$. Resultados: vidrio $\varepsilon_r\approx4{,}3$ ($S=4{,}32$) y metacrilato $\approx3{,}2$ ($S=3{,}24$), ambos en el rango real.
+- **Fase de $\Gamma$:** no sale del módulo; haría falta la posición del primer mínimo **respecto a la cara de la lámina**.
+
+### 13.3 Práctica 3: polarización
+
+- Antena lineal: recibe la proyección del campo. El guion usa $V\propto\cos\theta_E$; como el detector es cuadrático, el modelo físico es $V\propto\cos^2\theta_E$. **Con los datos obtenidos ambos ajustan igual de bien** ($r\approx0{,}97$ en los dos casos; el ajuste lineal da $V\approx6756\cos\theta_E-366$ mV), así que conviene presentar los dos y comentar la diferencia.
+- **Rejilla de hilos = polarizador:** transmite solo el campo **perpendicular a los hilos**; el campo paralelo a los hilos se refleja. Rejilla vertical con emisor vertical → bloqueo; rejilla horizontal con emisor vertical → paso.
+- **Dos polarizadores en cascada (Malus):** $E=E_0\cos\theta_1\cos\theta_2$. Rejilla a $45^\circ$ y emisor vertical: $E_0\cos45^\circ\cdot\cos45^\circ=E_0/2$ para el receptor a $0^\circ$ **y** a $90^\circ$ (lecturas teóricamente iguales; las diferencias medidas se atribuyen a desalineamiento y a que la rejilla no es ideal).
+
+---
+
+## 14. Problemas tipo resueltos
+
+Los problemas de la sección 4.4 (ejemplos A y B) y 10.5 (a y b) ya están resueltos allí. Aquí el resto.
+
+### 14.1 Agua de mar a 50 MHz (aire → mar)
+
+Datos: $\varepsilon_r=72$, $\mu_r=1$, $\sigma=4$ S/m, $f=50$ MHz, $E_i=200\ \mu$V/m lineal, incidencia normal. Pedido: $\alpha$, $\beta$, $\eta_c$, $\lambda$, $\delta_s$, $z_{1\%}$ y $\mathbf{E},\mathbf{H}$ a 0,8 m de profundidad.
+
+1. $\omega=3{,}14\cdot10^8$ rad/s; $\omega\varepsilon=0{,}200$ S/m → $\tan\delta=4/0{,}2003=19{,}97\gg1$: casi buen conductor (se usan las fórmulas exactas).
+2. $\alpha=27{,}4$ Np/m, $\beta=28{,}8$ rad/m (la aproximación $\sqrt{\pi f\mu\sigma}=28{,}1$ confirma el orden).
+3. $\eta_c=\eta/\sqrt{1-j\tan\delta}=44{,}4/\sqrt{19{,}98}\angle43{,}6^\circ\approx9{,}93\angle43{,}6^\circ\ \Omega$.
+4. $\lambda=2\pi/\beta=21{,}8$ cm; $\delta_s=1/\alpha=3{,}65$ cm; $z_{1\%}=\ln100/\alpha=16{,}8$ cm.
+5. $\tau=\dfrac{2\eta_c}{\eta_c+377}=0{,}0517\angle42{,}5^\circ$ → $E_{t0}=|\tau|E_i=10{,}3\ \mu$V/m con fase $\varphi_\tau=42{,}5^\circ=0{,}743$ rad.
+6. A $z=0{,}8$ m: $e^{-\alpha z}=e^{-21{,}9}=3{,}0\cdot10^{-10}$ (22 profundidades de penetración).
+
+$$\mathbf{E}(0{,}8,t)\approx3{,}1\cdot10^{-15}\cos(3{,}14\cdot10^8t-22{,}31)\,\hat{\mathbf{x}}\ \text{V/m}$$
+
+$$\mathbf{H}(0{,}8,t)\approx3{,}1\cdot10^{-16}\cos(3{,}14\cdot10^8t-23{,}07)\,\hat{\mathbf{y}}\ \text{A/m}$$
+
+($H_{t0}=E_{t0}/|\eta_c|=1{,}04\ \mu$A/m; fase de $\mathbf{H}$: $-\beta z+\varphi_\tau-\theta_\eta$.) El campo es prácticamente nulo: a 50 MHz el mar apantalla en centímetros. Potencia: 92,7 % reflejada y 7,3 % transmitida.
+
+### 14.2 Frecuencia para $\delta_s=20$ m en agua de mar
+
+1. $\alpha=1/\delta_s=0{,}05$ Np/m. Buen conductor: $\alpha=\sqrt{\pi f\mu\sigma}$ → $f=\dfrac{\alpha^2}{\pi\mu\sigma}=\dfrac{0{,}0025}{\pi\cdot4\pi10^{-7}\cdot4}=158{,}3$ Hz (banda **ELF**).
+2. Comprobación: $\tan\delta=\sigma/\omega\varepsilon\approx6{,}3\cdot10^6\gg1$ ✓.
+3. $\lambda_{mar}=2\pi\delta_s=125{,}7$ m; $\lambda_{aire}=c/f=1895$ km. Relación $\lambda_{aire}/\lambda_{mar}\approx1{,}5\cdot10^4$: la onda se acorta enormemente porque en un conductor $\beta\propto\sqrt f$ y depende de $\sigma$.
+
+### 14.3 Lámina de 100 m (aire | $\varepsilon_r=16$, $\sigma=10^{-4}$ S/m | aire), 30 MHz, $E_i=1$ V/m, antena a 10 m
+
+1. $\omega\varepsilon=0{,}0267$ S/m → $\tan\delta=3{,}7\cdot10^{-3}\ll1$: buen dieléctrico.
+2. $\eta_2\approx\eta_0/4=94{,}2\ \Omega$; $\alpha\approx\frac{\sigma}{2}\eta_2=4{,}71\cdot10^{-3}$ Np/m; $\beta=\omega\sqrt{\mu\varepsilon}=2{,}515$ rad/m; $\lambda_2=2{,}50$ m → $d\approx40\lambda_2$ (múltiplo de $\lambda_2/2$: lámina casi resonante).
+3. $\Gamma_{21}=\dfrac{377-94{,}2}{377+94{,}2}=0{,}600$; $\tau_{12}=0{,}400$; $\tau_{21}=1{,}600$; $e^{-\alpha d}=0{,}624$ (con $d=40\lambda_2$ exacto, $e^{-j\beta d}=1$).
+4. Paso directo: $\tau_{12}\tau_{21}e^{-\alpha d}=0{,}400$. Con rebotes: $\tau_{tot}=\dfrac{0{,}400\cdot1{,}600\cdot0{,}624}{1-0{,}36\cdot0{,}624^2}\approx0{,}46$ (con las aproximaciones de bajas pérdidas sale 0,465; el cálculo numérico con $\gamma$ y $\eta$ complejos exactos da 0,460).
+5. Comprobación sin pérdidas: $\tau_{tot}=\dfrac{0{,}640}{1-0{,}36}=1$ ✓.
+6. En el aire posterior no hay pérdidas: $|E_{antena}|\approx\mathbf{0{,}46}$ **V/m**.
+
+### 14.4 Aire → dieléctrico $\varepsilon=4\varepsilon_0$, $S_i=100$ W/m²
+
+1. $\eta_1=377\ \Omega$, $\eta_2=377/2=188{,}5\ \Omega$.
+2. $\Gamma=\dfrac{188{,}5-377}{188{,}5+377}=-\dfrac13$; $\tau=1+\Gamma=\dfrac23$; $S=\dfrac{1+1/3}{1-1/3}=2$.
+3. $E_i=\sqrt{2\eta_1S_i}=274{,}6$ V/m; $E_r=|\Gamma|E_i=91{,}5$ V/m; $E_t=\tau E_i=183{,}1$ V/m.
+4. $S_r=|\Gamma|^2S_i=11{,}1$ W/m²; $S_t=\dfrac{E_t^2}{2\eta_2}=88{,}9$ W/m² (no $\tau^2S_i$).
+5. $S_r+S_t=100$ W/m² = $S_i$: **se conserva** (medios sin pérdidas, identidad $\Gamma^2+\frac{\eta_1}{\eta_2}\tau^2=1$).
+
+---
+
+## 15. Repaso matemático (Apéndice A)
+
+**Complejos.** $z=a+jb=|z|\angle\theta=|z|e^{j\theta}$; $|z|=\sqrt{a^2+b^2}$; $\theta=\arctan(b/a)$ (cuidado con el cuadrante). Euler $e^{\pm j\theta}=\cos\theta\pm j\sin\theta$. Producto: módulos se multiplican, fases se suman; cociente: se dividen/restan. Moivre $z^n=|z|^ne^{jn\theta}$; raíces $|z|^{1/n}e^{j(\theta+2k\pi)/n}$, $k=0..n-1$. Multiplicar por $e^{j\varphi}$ gira $z$ un ángulo $\varphi$. Conjugado: $z^*=a-jb$, $zz^*=|z|^2$, $z+z^*=2a$. $\sin\theta=\mathrm{Re}[-je^{j\theta}]$. $\tanh(j\beta)=j\tan\beta$.
+
+**Fasores.** $x(t)=X_0\cos(\omega t+\alpha)\Rightarrow X=X_0e^{j\alpha}$, $x(t)=\mathrm{Re}[Xe^{j\omega t}]$. Derivar $\to\times j\omega$; integrar $\to\div j\omega$. Respuesta armónica $Y=H(j\omega)X$.
+
+**Circuitos.** $Z_R=R$, $Z_L=j\omega L$, $Z_C=1/j\omega C$; $V=ZI$; $Y=1/Z$; generador real $V_s=V_g-Z_gI$. Kirchhoff: suma de corrientes en un nudo $=0$; suma de tensiones en una malla $=0$.
+
+**Potencia y decibelios.** $\langle P\rangle=\tfrac12V_0I_0\cos\varphi=\tfrac12\mathrm{Re}[VI^*]$; $P_{av}=\tfrac12|I|^2R_L$. Pérdida en potencia $10\log(P_0/P_s)$ dB; en amplitud $20\log(A_0/A_s)$ dB; en cascada los dB se suman. $|A_s|=e^{-\alpha}|A_0|$ → 1 Np $=8{,}686$ dB. Ejemplos: 4 dB de pérdida ⇒ llega el 39,8 % de la potencia; pérdidas del 10 % y del 20 % en cascada ⇒ 1,43 dB.
+
+**Ondas armónicas.** $\omega=2\pi f$, $f=1/T$, $\beta=2\pi/\lambda$, $v_p=\lambda f=\omega/\beta$, $v_g=d\omega/d\beta$. Onda hacia $+x$: $y=A\cos(\omega t-\beta x+\varphi_0)$; valor rms $A/\sqrt2$. D'Alembert: $\partial_x^2\Phi-\frac1{v_p^2}\partial_t^2\Phi=0$, solución $f^+(x-v_pt)+f^-(x+v_pt)$; en fasores $Y''+\beta^2Y=0$, $Y=Ae^{-j\beta x}$.
+
+**Vectores.** $\vec A\cdot\vec B=AB\cos\alpha$; $\vec A\times\vec B$ por determinante, módulo $AB\sin\alpha$. Ciclo: $\hat x\times\hat y=\hat z$, $\hat y\times\hat z=\hat x$, $\hat z\times\hat x=\hat y$ (en sentido contrario, signo $-$). Esféricas→cartesianas: $x=r\sin\theta\cos\phi$, $y=r\sin\theta\sin\phi$, $z=r\cos\theta$; el cambio de base de vectores unitarios es una matriz ortogonal ($M^{-1}=M^t$).
+
+---
+
+## 16. ⚪ Fuera del parcial
+
+No entran en el próximo parcial (se citan solo para ubicarlos):
+
+- ⚪ Efecto Doppler.
+- ⚪ Ondas planas con **incidencia oblicua** (ley de Snell, ángulo crítico, reflexión total).
+- ⚪ **Ángulo de Brewster.**
+- ⚪ **Polarización paralela** (TM) en la interfaz.
+
+Todo lo demás de este documento sí entra.****
