@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Resúmenes</title>
 <script>
-try{var p=JSON.parse(localStorage.getItem('rv-theme'));var l=p==='light'||(p!=='dark'&&matchMedia('(prefers-color-scheme: light)').matches);document.documentElement.dataset.theme=l?'light':'dark'}catch(e){}
+try{var p=JSON.parse(localStorage.getItem('rv-theme'));document.documentElement.dataset.theme=p==='sepia'?'sepia':(p==='light'||(p!=='dark'&&matchMedia('(prefers-color-scheme: light)').matches))?'light':'dark'}catch(e){}
 try{if(JSON.parse(localStorage.getItem('rv-noside'))==1&&innerWidth>1000)document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('noside')})}catch(e){}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,6 +48,17 @@ try{if(JSON.parse(localStorage.getItem('rv-noside'))==1&&innerWidth>1000)documen
   --stp:#8a98ab; --stc:#1457c4; --str:#bf8700; --std:#1a7f45;
   --sub0:#1457c4; --sub1:#067285; --sub2:#5646c9; --sub3:#0b7254; --sub4:#8a6100; --sub5:#b0346e; --sub6:#b8481a;
   --shadow:0 14px 44px rgba(20,40,80,.2);
+}
+:root[data-theme="sepia"]{
+  color-scheme:light;
+  --bg:#F3EAD6; --s1:#FAF3E3; --s2:#EDE2C8; --s3:#E3D6B6;
+  --line:#DACDA9; --line2:#C6B68C;
+  --tx:#2A2216; --tx2:#58492E; --tx3:#6A5B3B;
+  --blue:#0f4cae; --blue2:#0a3a85; --on-blue:#ffffff; --blue-bg:rgba(31,111,235,.1);
+  --ok:#1a7f45; --warn:#704b00; --bad:#a91c27; --vio:#6f42c1;
+  --stp:#8a98ab; --stc:#0f4cae; --str:#bf8700; --std:#1a7f45;
+  --sub0:#0f4cae; --sub1:#055a69; --sub2:#5646c9; --sub3:#0b7254; --sub4:#775300; --sub5:#b0346e; --sub6:#b8481a;
+  --shadow:0 14px 44px rgba(70,50,10,.22);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:78px;-webkit-text-size-adjust:100%}
@@ -683,6 +694,21 @@ details.notes>summary::-webkit-details-marker{display:none}
 details.notes[open]>summary{margin-bottom:12px;color:var(--tx)}
 @media (max-width:640px){.dh-bar{flex-direction:column;align-items:flex-start}.cont{padding:16px}}
 
+/* ===== Lectura cómoda ===== */
+.md{font-family:var(--read,var(--font));line-height:1.82}
+.page{grid-template-columns:minmax(0,var(--mw,720px)) 220px}
+body.focus .page{grid-template-columns:minmax(0,var(--mw,720px))}
+.md p,.md ul,.md ol,.md blockquote,.md table{margin-bottom:1.2em}
+.md li{margin:.28em 0}
+.md h2{border-bottom:0;padding-bottom:0;margin-top:2.3em}
+.md h3{margin-top:1.8em}
+.md h2::before{content:"";display:block;width:34px;height:3px;border-radius:3px;background:var(--c,var(--blue));opacity:.85;margin-bottom:.55em}
+.md code,.md pre,.md .katex{font-family:var(--mono)}
+.md .katex{font-family:KaTeX_Main,"Times New Roman",serif}
+.md strong{font-weight:650;color:var(--tx)}
+@media (min-width:1001px){body.auto #main{padding-left:clamp(24px,5vw,80px);padding-right:clamp(24px,5vw,80px)}}
+body.auto .page,body.auto.noside .page{justify-content:center}
+
 </style>
 </head>
 <body>
@@ -819,7 +845,7 @@ const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && 
 
 /* ---------- Almacenamiento local (con copia en memoria si el navegador lo bloquea) ---------- */
 const mem = {};
-const SYNC_SKIP = new Set(['rv-tree-v1', 'rv-meta', 'rv-sync', 'rv-theme', 'rv-noside', 'rv-pos', 'rv-fs', 'rv-mw', 'rv-pomo', 'rv-full']);
+const SYNC_SKIP = new Set(['rv-tree-v1', 'rv-meta', 'rv-sync', 'rv-theme', 'rv-noside', 'rv-pos', 'rv-fs', 'rv-mw', 'rv-pomo', 'rv-full', 'rv-ff', 'rv-autohide']);
 const stamp = k => { if (SYNC_SKIP.has(k)) return; try { const m = JSON.parse(localStorage.getItem('rv-meta') || '{}'); m[k] = Date.now(); localStorage.setItem('rv-meta', JSON.stringify(m)); } catch {} if (typeof syncSoon === 'function') syncSoon(); };
 const store = {
   // Si lo guardado no tiene la forma esperada (p. ej. un objeto donde se espera una lista), se usa el valor por defecto
@@ -872,13 +898,13 @@ function progress(docs) {
 /* ---------- Tema claro / oscuro ---------- */
 let themePref = store.get('rv-theme', 'auto');
 const sysLight = () => { try { return matchMedia('(prefers-color-scheme: light)').matches; } catch { return false; } };
-const resolveTheme = () => themePref === 'light' || themePref === 'dark' ? themePref : (sysLight() ? 'light' : 'dark');
+const resolveTheme = () => themePref === 'light' || themePref === 'dark' || themePref === 'sepia' ? themePref : (sysLight() ? 'light' : 'dark');
 function applyTheme() {
   const t = resolveTheme();
   document.documentElement.dataset.theme = t;
   const hd = $('#hl-dark'), hl = $('#hl-light');
   if (hd) hd.media = t === 'dark' ? 'all' : 'not all';
-  if (hl) hl.media = t === 'light' ? 'all' : 'not all';
+  if (hl) hl.media = t !== 'dark' ? 'all' : 'not all';
   const b = $('#themeBtn');
   if (b) { b.innerHTML = ico(t === 'dark' ? 'sun' : 'moon'); b.title = t === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'; b.setAttribute('aria-label', b.title); }
 }
@@ -1967,7 +1993,7 @@ ACT['cards-start'] = el => {
   if (!list.length) return toast('No hay tarjetas para estudiar');
   startSession(shuffle(list).slice(0, 40));
 };
-function startSession(cards) { SESS = { q: [...cards], total: cards.length, done: 0, show: false, r: [0, 0, 0, 0], t0: Date.now() }; S.view = 'session'; S.cur = null; renderSession(); renderSide(); }
+function startSession(cards) { SESS = { q: [...cards], total: cards.length, done: 0, show: false, r: [0, 0, 0, 0], t0: Date.now() }; S.view = 'session'; applyAuto(); S.cur = null; renderSession(); renderSide(); }
 function endSession() { if (SESS && SESS.done > 0) log('cards', null, { n: SESS.done }); SESS = null; }
 function renderSession() {
   const s = SESS; if (!s) return;
@@ -2025,7 +2051,7 @@ function quizView(q) {
 ACT['quiz-start'] = () => {
   const F = UI.quizf, pool = shuffle(quizPool(F)).slice(0, +F.n);
   if (!pool.length) return toast('No hay preguntas disponibles');
-  QZ = { qs: pool, i: 0, ok: 0, wrong: [], answered: false }; S.view = 'session'; S.cur = null; renderQuiz(); renderSide();
+  QZ = { qs: pool, i: 0, ok: 0, wrong: [], answered: false }; S.view = 'session'; S.cur = null; applyAuto(); renderQuiz(); renderSide();
 };
 function renderQuiz() {
   const z = QZ; if (!z) return;
@@ -2164,7 +2190,7 @@ function settingsView() {
   S.view = 'tool:ajustes'; S.cur = null; document.title = `Ajustes · ${CFG.titulo}`;
   const n = store.keys().length;
   V(`<h1 class="ph">${ico('settings')} Ajustes</h1><p class="sub">Todo lo que guardas (estados, favoritos, exámenes, tareas, tarjetas, estadísticas) vive en este navegador. Haz copias de seguridad para no perderlo.</p>
-    <section class="pnl"><h3 class="lh nm">Apariencia</h3><div class="seg3" role="group" aria-label="Tema">${[['auto', 'Sistema'], ['light', 'Claro'], ['dark', 'Oscuro']].map(([k, l]) => `<button data-act="theme" data-t="${k}" class="${themePref === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <section class="pnl"><h3 class="lh nm">Apariencia</h3><div class="seg3" role="group" aria-label="Tema">${[['auto', 'Sistema'], ['light', 'Claro'], ['sepia', 'Sepia'], ['dark', 'Oscuro']].map(([k, l]) => `<button data-act="theme" data-t="${k}" class="${themePref === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       <div class="fld"><label for="fsr">Tamaño del texto: <b id="fsv">${fs}px</b></label><input id="fsr" type="range" min="13" max="24" value="${fs}" data-act-input="fs"></div></section>
     ${uiPanel()}${syncPanel()}${widthPanel()}
     <section class="pnl"><h3 class="lh nm">Copia de seguridad</h3><p class="muted">${plural(n, 'bloque de datos guardado', 'bloques de datos guardados')} en este navegador.</p><div class="dh-act"><button class="btn" data-act="export">${ico('download')} Exportar copia</button><label class="btn" tabindex="0">${ico('upload')} Importar copia<input type="file" accept="application/json,.json" id="imp" hidden></label><button class="btn danger" data-act="reset">${ico('trash')} Borrar todos mis datos</button></div></section>
@@ -2274,7 +2300,7 @@ function syncMenuBtn() {
 }
 function toggleSide() {
   if (isMobile()) document.body.classList.toggle('open');
-  else { const on = document.body.classList.toggle('noside'); store.set('rv-noside', on ? 1 : 0); }
+  else { const on = document.body.classList.toggle('noside'); if (!document.body.classList.contains('auto')) store.set('rv-noside', on ? 1 : 0); }
   syncMenuBtn();
 }
 
@@ -2522,13 +2548,27 @@ ACT.ui = el => { store.set('rv-full', +el.dataset.v); renderSide(); rerender(); 
 ACT['pomo-open'] = () => togglePomo(true);
 
 /* ---------- Ancho de lectura ---------- */
-const MW = [[640, 'Estrecho'], [800, 'Normal'], [1000, 'Ancho']];
-const getMw = () => { const v = +store.get('rv-mw', 800); return MW.some(m => m[0] === v) ? v : 800; };
-const applyMw = () => document.documentElement.style.setProperty('--mw', getMw() + 'px');
+const MW = [[600, 'Estrecho'], [720, 'Normal'], [900, 'Ancho']];
+const getMw = () => { const v = +store.get('rv-mw', 720); return MW.some(m => m[0] === v) ? v : 720; };
+const SERIF = 'Charter,"Iowan Old Style","Source Serif 4",Georgia,"Times New Roman",serif';
+const applyMw = () => { const r = document.documentElement.style; r.setProperty('--mw', getMw() + 'px'); r.setProperty('--read', store.get('rv-ff', 'sans') === 'serif' ? SERIF : 'var(--font)'); };
 function widthPanel() {
-  const w = getMw();
-  return `<section class="pnl"><h3 class="lh nm">Ancho de lectura</h3><div class="seg3" role="group" aria-label="Ancho de lectura">${MW.map(([v, l]) => `<button data-act="mw" data-w="${v}" class="${w === v ? 'on' : ''}" aria-pressed="${w === v}">${l}</button>`).join('')}</div>
-    <p class="muted">También puedes usar el modo enfoque (tecla <kbd>F</kbd>) dentro de un resumen.</p></section>`;
+  const w = getMw(), ff = store.get('rv-ff', 'sans'), ah = store.get('rv-autohide', 1) === 1;
+  const seg = (label, items, on, act, key) => `<div class="seg3" role="group" aria-label="${label}">${items.map(([v, l]) => `<button data-act="${act}" data-${key}="${v}" class="${String(on) === String(v) ? 'on' : ''}" aria-pressed="${String(on) === String(v)}">${l}</button>`).join('')}</div>`;
+  return `<section class="pnl"><h3 class="lh nm">Lectura</h3>
+    <p class="muted">Ancho del texto</p>${seg('Ancho de lectura', MW, w, 'mw', 'w')}
+    <p class="muted">Tipo de letra</p>${seg('Tipo de letra', [['sans', 'Sans-serif'], ['serif', 'Serif']], ff, 'ff', 'v')}
+    <p class="muted">Índice lateral al leer</p>${seg('Índice lateral al leer', [[1, 'Ocultar automáticamente'], [0, 'Mantener visible']], ah ? 1 : 0, 'ah', 'v')}
+    <p class="muted">Dentro de un resumen, <kbd>F</kbd> activa el modo enfoque. El índice se puede mostrar en cualquier momento con <kbd>B</kbd>.</p></section>`;
+}
+ACT.ff = el => { store.set('rv-ff', el.dataset.v); applyMw(); rerender(); };
+ACT.ah = el => { store.set('rv-autohide', +el.dataset.v); applyAuto(); rerender(); };
+/* Al leer o repasar tarjetas, el índice lateral se oculta solo (se vuelve a mostrar al salir) */
+function applyAuto() {
+  const b = document.body, want = !isMobile() && (S.view === 'doc' || S.view === 'session') && store.get('rv-autohide', 1) === 1;
+  if (want) { if (!b.classList.contains('auto')) { b.classList.add('auto', 'noside'); } }
+  else if (b.classList.contains('auto')) { b.classList.remove('auto'); if (store.get('rv-noside', 0) !== 1) b.classList.remove('noside'); }
+  syncMenuBtn();
 }
 ACT.mw = el => { store.set('rv-mw', +el.dataset.w); applyMw(); rerender(); };
 
@@ -2745,7 +2785,7 @@ async function printDocs(paths) {
 
 /* ---------- Después de cada ruta / documento ---------- */
 function afterRoute() {
-  hvHide(); const b = $('#selbar'); if (b) b.hidden = true;
+  hvHide(); applyAuto(); const b = $('#selbar'); if (b) b.hidden = true;
   if (S.view !== 'doc' && document.body.classList.contains('focus')) { document.body.classList.remove('focus'); const x = $('#focusX'); if (x) x.hidden = true; }
   if (S.fresh && !(document.activeElement && document.activeElement.id === 'q')) { const m = $('#main'); if (m) m.focus({ preventScroll: true }); }
   pmPaint();
