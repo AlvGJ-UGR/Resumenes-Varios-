@@ -1928,7 +1928,7 @@ function cardsView(q) {
     const st = !s ? '<span class="bd">Nueva</span>' : s.due <= t ? '<span class="bd bad">Pendiente</span>' : `<span class="bd">En ${diffDays(s.due, t)} d</span>`;
     return `<div class="dr cr" style="--c:${sub ? sub.color : 'var(--blue)'}"><a class="dr-a"${d ? ` href="${href(d.path)}"` : ''}><span class="dr-t">${renderInline(c.q)}</span><span class="dr-m">${sub ? `<span class="bd sb">${ico(sub.icon)}${esc(sub.key)}</span>` : ''}${st}${d ? `<span class="bd">${esc(d.title)}</span>` : '<span class="bd">Mía</span>'}</span></a>${c.user ? `<button class="ib sm" data-act="card-edit" data-id="${c.uid}" title="Editar" aria-label="Editar">${ico('edit')}</button><button class="ib sm" data-act="card-del" data-id="${c.uid}" title="Eliminar" aria-label="Eliminar">${ico('trash')}</button>` : ''}</div>`;
   };
-  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div>
+  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
     <div class="pnl libf"><label class="sel"><span>Asignatura</span><select data-k="subj" data-scope="cards">${optHtml(subjOptions(), F.subj)}</select></label><label class="sel"><span>Resumen</span><select data-k="doc" data-scope="cards">${optHtml([['', 'Todos'], ...docsWith.map(d => [d.path, d.title])], F.doc)}</select></label></div>
     <div class="kps three"><div class="kp static"><span class="kp-t"><small>Total</small><b>${pool.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Pendientes hoy</small><b>${due.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Dominadas (≥21 d)</small><b>${pool.filter(c => (m[c.id] || {}).iv >= 21).length}</b></span></div></div>
     <div class="dh-act"><button class="btn pri" data-act="cards-start" ${due.length ? '' : 'disabled'}>${ico('play')} Estudiar ahora (${due.length})</button><button class="btn" data-act="cards-start" data-all="1" ${pool.length ? '' : 'disabled'}>${ico('repeat')} Repasar todas (${pool.length})</button></div>
@@ -2814,6 +2814,50 @@ function extraInit() {
   // PWA
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+/* ---------- Importar tarjetas desde un archivo (Pregunta @@ Respuesta) ---------- */
+function parseCardFile(text) {
+  const out = []; let h = [], last = null; // h: encabezados vigentes (uno por nivel, en orden de aparición)
+  for (const raw of String(text).replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n')) {
+    const line = raw.trim(), hm = line.match(/^(#{1,6})\s+(.*)$/);
+    if (hm) { h = h.filter(x => x[0] !== hm[1].length); h.push([hm[1].length, hm[2].trim()]); last = null; continue; }
+    if (!line) { last = null; continue; }
+    const m = line.match(/^(.*?)\s*(?:@@|::|\t)\s*(.+)$/);
+    if (m && m[1]) { last = { q: m[1].trim(), a: m[2].trim(), sec: h.map(x => x[1]).join(' › ') }; out.push(last); }
+    else if (last) last.a += '\n' + line;
+  }
+  return out;
+}
+ACT['card-import'] = () => {
+  const subjs = S.subjects.map(s => [s.key, s.key + (s.name ? ' · ' + s.name : '')]);
+  const first = (UI.cardsf.subj && subjs.some(x => x[0] === UI.cardsf.subj)) ? UI.cardsf.subj : (subjs[0] || [''])[0];
+  const docOpts = k => [['', 'Sin resumen concreto'], ...allDocs().filter(f => f.subj === k).map(f => [f.path, f.title])];
+  formModal({
+    title: 'Importar tarjetas', wide: true, submit: 'Importar',
+    text: 'Archivo de texto (.src, .txt, .md…) con una tarjeta por línea: <b>Pregunta @@ Respuesta</b>. Las líneas que empiezan por # se ignoran (se guardan como sección).',
+    fields: [
+      { name: 'subj', label: 'Asignatura', type: 'select', value: first, options: subjs },
+      { name: 'path', label: 'Resumen al que pertenecen', type: 'select', value: UI.cardsf.doc || '', options: docOpts(first) },
+      { name: 'file', label: 'Archivo', type: 'file' },
+      { name: 'text', label: 'o pega aquí el contenido', type: 'textarea', rows: 6, placeholder: '¿Qué es un host? @@ Sistema final que genera o consume información.' }
+    ],
+    onSubmit: v => {
+      const cs = parseCardFile(v.text);
+      if (!cs.length) { toast('No se encontró ninguna tarjeta. Formato: Pregunta @@ Respuesta'); return false; }
+      const all = store.get(K.uc, []), seen = new Set(all.map(c => (c.path || '') + '|' + c.q.toLowerCase()));
+      let n = 0, dup = 0;
+      for (const c of cs) { const k = (v.path || '') + '|' + c.q.toLowerCase(); if (seen.has(k)) { dup++; continue; } seen.add(k); all.push({ id: uid(), q: c.q, a: c.a, subj: v.subj, path: v.path, sec: c.sec }); n++; }
+      store.set(K.uc, all); toast(`${n} tarjetas importadas` + (dup ? ` (${dup} repetidas omitidas)` : ''), 4000); rerender(); renderSide();
+    }
+  });
+  const f = $('.ov form'); if (!f) return;
+  const file = $('input[type=file]', f); file.accept = '.src,.txt,.md,.markdown,.csv,text/*';
+  const ta = f.elements.text, info = document.createElement('div'); info.className = 'muted'; info.id = 'impInfo'; ta.after(info);
+  const count = () => { const n = parseCardFile(ta.value).length; info.textContent = ta.value.trim() ? `${n} tarjetas detectadas` : ''; };
+  ta.addEventListener('input', count);
+  file.addEventListener('change', async () => { const fl = file.files[0]; if (!fl) return; ta.value = await fl.text(); count(); });
+  f.elements.subj.addEventListener('change', () => { f.elements.path.innerHTML = docOpts(f.elements.subj.value).map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); });
+};
 
 </script>
 </body>
