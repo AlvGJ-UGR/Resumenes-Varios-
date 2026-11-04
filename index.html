@@ -712,6 +712,11 @@ body.focus .page{grid-template-columns:minmax(0,var(--mw,720px))}
 body.auto .page,body.auto.noside .page{justify-content:center}
 @media (max-width:640px){.dh-bar .stseg{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px}.dh-bar .stseg button{justify-content:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px}.dh-bar .stseg button.on{border-color:currentColor}.dh-bar .dh-act{width:100%}}
 
+.fsec{align-self:center;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--tx3);font-weight:600}
+.rate button:not(.btn) em{font-style:normal;font-size:12px;font-weight:500;color:var(--tx2)}
+.flash-c .fq{font-size:clamp(1.25rem,2.6vw,1.6rem)}
+.flash-c .fa{font-size:clamp(1.05rem,2.2vw,1.25rem);color:var(--tx)}
+
 </style>
 </head>
 <body>
@@ -866,7 +871,7 @@ const K = { st: 'rv-st', fav: 'rv-fav', hist: 'rv-hist', exams: 'rv-exams', task
 /* ---------- Estado global ---------- */
 const S = { subjects: [], byPath: new Map(), bySubj: new Map(), view: '', tok: 0, noAnim: false, offline: false, curDoc: null, cur: null, refs: new Map() };
 const IDX = { started: false, ready: false, done: 0, total: 0 };
-const UI = { lib: { q: '', subj: '', tipo: '', dif: '', est: '', tag: '', tema: '', fav: false }, form: { subj: '', q: '', meta: false }, map: { subj: '' }, cal: { m: null, d: null }, taskf: 'pend', cardsf: { subj: '', doc: '' }, quizf: { subj: '', doc: '', n: '10' } };
+const UI = { lib: { q: '', subj: '', tipo: '', dif: '', est: '', tag: '', tema: '', fav: false }, form: { subj: '', q: '', meta: false }, map: { subj: '' }, cal: { m: null, d: null }, taskf: 'pend', cardsf: { subj: '', doc: '', sec: '', n: '20' }, quizf: { subj: '', doc: '', n: '10' } };
 const allDocs = () => S.subjects.flatMap(s => s.files);
 const ACT = {};   // acciones por data-act
 
@@ -1208,7 +1213,7 @@ function finishIndex() {
   IDX.ready = true;
   document.dispatchEvent(new Event('rv-indexed'));
 }
-const allCards = () => (S.docCards || []).concat(store.get(K.uc, []).map(c => ({ id: 'u:' + c.id, q: c.q, a: c.a, subj: c.subj || '', path: c.path || null, user: true, uid: c.id })));
+const allCards = () => (S.docCards || []).concat(store.get(K.uc, []).map(c => ({ id: 'u:' + c.id, q: c.q, a: c.a, subj: c.subj || '', path: c.path || null, sec: c.sec || '', user: true, uid: c.id })));
 const allQuiz = () => allDocs().flatMap(d => d.quiz || []);
 
 /* ---------- Búsqueda matemática: normalización de expresiones ---------- */
@@ -1814,7 +1819,12 @@ const getRevs = () => store.get(K.rev, []);
 const dueReviews = () => getRevs().filter(r => !r.done && r.date <= today() && S.byPath.has(r.path));
 const srsMap = () => store.get(K.srs, {});
 const isDue = (c, m) => { const s = (m || srsMap())[c.id]; return !s || s.due <= today(); };
-const dueCards = list => { const m = srsMap(); return (list || allCards()).filter(c => isDue(c, m)); };
+const newLimit = () => { const v = +store.get('rv-newlim', 20); return v >= 0 ? v : 20; };
+const dueCards = list => {
+  const m = srsMap(), t = today(), lim = newLimit(); let used = Object.values(m).filter(x => x && x.first === t).length; const out = [];
+  for (const c of (list || allCards())) { const x = m[c.id]; if (!x) { if (used >= lim) continue; used++; out.push(c); } else if (x.due <= t) out.push(c); }
+  return out;
+};
 const subjOptions = (all = 'Todas') => [['', all], ...S.subjects.map(s => [s.key, s.key + (s.name ? ' · ' + s.name : '')])];
 const optHtml = (opts, val) => opts.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(val) ? ' selected' : ''}>${esc(l)}</option>`).join('');
 const needIdx = (id, title) => { S.view = 'tool:' + id; S.cur = null; document.title = `${title} · ${CFG.titulo}`; if (IDX.ready) return false; V(`<h1 class="ph">${title}</h1><div class="loading">Indexando los resúmenes…</div>`); startIndex(); return true; };
@@ -1939,9 +1949,9 @@ ACT['rev-add'] = el => {
 
 /* ---------- Tarjetas de memoria (repetición espaciada) ---------- */
 let SESS = null;
-function cardPool() { const F = UI.cardsf; return allCards().filter(c => (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc)); }
-function schedule(c, r) {
-  const m = srsMap(), st = m[c.id] || { ef: 2.5, iv: 0, reps: 0 };
+function cardPool() { const F = UI.cardsf; return allCards().filter(c => (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc) && (!F.sec || c.sec === F.sec)); }
+function nextState(c, r) {
+  const m = srsMap(), st = { ...(m[c.id] || { ef: 2.5, iv: 0, reps: 0 }) };
   if (r === 0) { st.reps = 0; st.iv = 0; st.ef = Math.max(1.3, st.ef - 0.2); st.due = today(); }
   else {
     if (r === 1) { st.iv = Math.max(1, Math.round((st.iv || 1) * 1.2)); st.ef = Math.max(1.3, st.ef - 0.15); }
@@ -1949,23 +1959,27 @@ function schedule(c, r) {
     else { st.iv = st.reps === 0 ? 3 : Math.max(st.iv + 1, Math.round(st.iv * st.ef * 1.3)); st.ef += 0.15; }
     st.reps++; st.due = addDays(today(), st.iv);
   }
-  st.last = today(); m[c.id] = st; store.set(K.srs, m);
+  return st;
 }
+function schedule(c, r) { const m = srsMap(), st = nextState(c, r); st.last = today(); if (!st.first) st.first = today(); m[c.id] = st; store.set(K.srs, m); }
+const ivLabel = (c, r) => { if (r === 0) return 'ahora'; const d = nextState(c, r).iv; return d < 30 ? d + ' d' : d < 365 ? Math.round(d / 30) + ' m' : (d / 365).toFixed(1) + ' a'; };
 function cardsView(q) {
   if (needIdx('tarjetas', 'Tarjetas')) return;
   const F = UI.cardsf;
-  if (S.fresh) { F.subj = (q && q.get('subj')) || ''; F.doc = (q && q.get('doc')) || ''; }
-  if (S.fresh && q && q.get('go') === '1') { const l = shuffle(dueCards(cardPool())); if (l.length) { startSession(l.slice(0, 40)); return; } toast('No hay tarjetas pendientes en este tema'); }
+  if (S.fresh) { F.subj = (q && q.get('subj')) || ''; F.doc = (q && q.get('doc')) || ''; F.sec = ''; }
+  if (S.fresh && q && q.get('go') === '1') { const l = shuffle(dueCards(cardPool())); if (l.length) { startSession(l.slice(0, +F.n >= 999 ? l.length : +F.n || 20)); return; } toast('No hay tarjetas pendientes en este tema'); }
   const pool = cardPool(), due = dueCards(pool), m = srsMap(), t = today();
   const cnt = {}; allCards().forEach(c => { if (c.path) cnt[c.path] = (cnt[c.path] || 0) + 1; });
   const docsWith = allDocs().filter(d => cnt[d.path] && (!F.subj || d.subj === F.subj));
+  const secCnt = {}; allCards().filter(c => c.sec && (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc)).forEach(c => { secCnt[c.sec] = (secCnt[c.sec] || 0) + 1; });
+  const secOpts = [['', 'Todos los apartados'], ...Object.keys(secCnt).sort((a, b) => a.localeCompare(b, 'es', { numeric: true })).map(k => [k, `${k} (${secCnt[k]})`])];
   const row = c => {
     const s = m[c.id], d = c.path && S.byPath.get(c.path), sub = S.bySubj.get(c.subj);
     const st = !s ? '<span class="bd">Nueva</span>' : s.due <= t ? '<span class="bd bad">Pendiente</span>' : `<span class="bd">En ${diffDays(s.due, t)} d</span>`;
-    return `<div class="dr cr" style="--c:${sub ? sub.color : 'var(--blue)'}"><a class="dr-a"${d ? ` href="${href(d.path)}"` : ''}><span class="dr-t">${renderInline(c.q)}</span><span class="dr-m">${sub ? `<span class="bd sb">${ico(sub.icon)}${esc(sub.key)}</span>` : ''}${st}${d ? `<span class="bd">${esc(d.title)}</span>` : '<span class="bd">Mía</span>'}</span></a>${c.user ? `<button class="ib sm" data-act="card-edit" data-id="${c.uid}" title="Editar" aria-label="Editar">${ico('edit')}</button><button class="ib sm" data-act="card-del" data-id="${c.uid}" title="Eliminar" aria-label="Eliminar">${ico('trash')}</button>` : ''}</div>`;
+    return `<div class="dr cr" style="--c:${sub ? sub.color : 'var(--blue)'}"><a class="dr-a"${d ? ` href="${href(d.path)}"` : ''}><span class="dr-t">${renderInline(c.q)}</span><span class="dr-m">${sub ? `<span class="bd sb">${ico(sub.icon)}${esc(sub.key)}</span>` : ''}${st}${d ? `<span class="bd">${esc(d.title)}</span>` : '<span class="bd">Mía</span>'}${c.sec ? `<span class="bd">${esc(c.sec)}</span>` : ''}</span></a>${c.user ? `<button class="ib sm" data-act="card-edit" data-id="${c.uid}" title="Editar" aria-label="Editar">${ico('edit')}</button><button class="ib sm" data-act="card-del" data-id="${c.uid}" title="Eliminar" aria-label="Eliminar">${ico('trash')}</button>` : ''}</div>`;
   };
   V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button><button class="btn" data-act="card-purge">${ico('trash')} Eliminar varias</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
-    <div class="pnl libf"><label class="sel"><span>Asignatura</span><select data-k="subj" data-scope="cards">${optHtml(subjOptions(), F.subj)}</select></label><label class="sel"><span>Resumen</span><select data-k="doc" data-scope="cards">${optHtml([['', 'Todos'], ...docsWith.map(d => [d.path, `${d.title} (${cnt[d.path]})`])], F.doc)}</select></label></div>
+    <div class="pnl libf"><label class="sel"><span>Asignatura</span><select data-k="subj" data-scope="cards">${optHtml(subjOptions(), F.subj)}</select></label><label class="sel"><span>Resumen</span><select data-k="doc" data-scope="cards">${optHtml([['', 'Todos'], ...docsWith.map(d => [d.path, `${d.title} (${cnt[d.path]})`])], F.doc)}</select></label>${secOpts.length > 1 ? `<label class="sel"><span>Apartado</span><select data-k="sec" data-scope="cards">${optHtml(secOpts, F.sec)}</select></label>` : ''}<label class="sel"><span>Por sesión</span><select data-k="n" data-scope="cards">${optHtml([['10', '10'], ['20', '20'], ['40', '40'], ['80', '80'], ['999', 'Todas']], F.n)}</select></label><label class="sel"><span>Nuevas al día</span><select data-k="newlim" data-scope="cards">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['40', '40'], ['100', '100'], ['9999', 'Sin límite']], newLimit())}</select></label></div>
     <div class="kps three"><div class="kp static"><span class="kp-t"><small>Total</small><b>${pool.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Pendientes hoy</small><b>${due.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Dominadas (≥21 d)</small><b>${pool.filter(c => (m[c.id] || {}).iv >= 21).length}</b></span></div></div>
     <div class="dh-act"><button class="btn pri" data-act="cards-start" ${due.length ? '' : 'disabled'}>${ico('play')} Estudiar ahora (${due.length})</button><button class="btn" data-act="cards-start" data-all="1" ${pool.length ? '' : 'disabled'}>${ico('repeat')} Repasar todas (${pool.length})</button></div>
     ${pool.length ? `<div class="dl">${pool.map(row).join('')}</div>` : emptyBox('cards', 'Aún no hay tarjetas.', 'Crea una con «Nueva tarjeta» o añade un bloque <code>flashcards</code> a un resumen (mira la Ayuda).')}`);
@@ -1994,7 +2008,7 @@ ACT['card-del'] = el => confirmModal('¿Eliminar esta tarjeta?', () => { store.s
 ACT['cards-start'] = el => {
   const pool = cardPool(), list = el.dataset.all === '1' ? pool : dueCards(pool);
   if (!list.length) return toast('No hay tarjetas para estudiar');
-  startSession(shuffle(list).slice(0, 40));
+  const n = +UI.cardsf.n || 20; startSession(shuffle(list).slice(0, n >= 999 ? list.length : n));
 };
 function startSession(cards) { SESS = { q: [...cards], total: cards.length, done: 0, show: false, r: [0, 0, 0, 0], t0: Date.now() }; S.view = 'session'; applyAuto(); S.cur = null; renderSession(); renderSide(); }
 function endSession() { if (SESS && SESS.done > 0) log('cards', null, { n: SESS.done }); SESS = null; }
@@ -2002,9 +2016,9 @@ function renderSession() {
   const s = SESS; if (!s) return;
   const c = s.q[0]; if (!c) return finishSession();
   const d = c.path && S.byPath.get(c.path), pct = Math.round(s.done / s.total * 100);
-  V(`<div class="sess"><div class="sess-h"><button class="btn sm" data-act="sess-end">${ico('x')} Salir</button><div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span>${s.done}/${s.total}</span></div>
-    <div class="flash-c"><div class="fq">${renderInline(c.q)}</div>${s.show ? `<hr><div class="fa">${renderInline(c.a).replace(/\n/g, '<br>')}</div>` : ''}${d ? `<a class="src" href="${href(d.path)}">${esc(d.title)}</a>` : ''}</div>
-    ${s.show ? `<div class="rate">${['Otra vez', 'Difícil', 'Bien', 'Fácil'].map((l, i) => `<button data-act="rate" data-r="${i}" class="r${i}">${l}<small>${i + 1}</small></button>`).join('')}</div>` : `<div class="rate one"><button class="btn pri lg" data-act="sess-show">Mostrar respuesta <small>Espacio</small></button></div>`}</div>`, 'sessv');
+  V(`<div class="sess"><div class="sess-h"><button class="btn sm" data-act="sess-end">${ico('x')} Salir</button>${s.undo ? `<button class="btn sm" data-act="sess-undo" title="Deshacer (Z)">${ico('repeat')} Deshacer</button>` : ''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span>${s.done}/${s.total}</span></div>
+    <div class="flash-c">${c.sec ? `<div class="fsec">${esc(c.sec)}</div>` : ''}<div class="fq">${renderInline(c.q)}</div>${s.show ? `<hr><div class="fa">${renderInline(c.a).replace(/\n/g, '<br>')}</div>` : ''}${d ? `<a class="src" href="${href(d.path)}">${esc(d.title)}</a>` : ''}</div>
+    ${s.show ? `<div class="rate">${['Otra vez', 'Difícil', 'Bien', 'Fácil'].map((l, i) => `<button data-act="rate" data-r="${i}" class="r${i}">${l}<em>${ivLabel(c, i)}</em><small>${i + 1}</small></button>`).join('')}</div>` : `<div class="rate one"><button class="btn pri lg" data-act="sess-show">Mostrar respuesta <small>Espacio</small></button></div>`}</div>`, 'sessv');
 }
 function finishSession() {
   const s = SESS, n = s.done, good = s.r[2] + s.r[3], tot = s.r.reduce((a, b) => a + b, 0);
@@ -2017,9 +2031,15 @@ function finishSession() {
 ACT['sess-show'] = () => { if (!SESS) return; SESS.show = true; S.noAnim = true; renderSession(); S.noAnim = false; };
 ACT.rate = el => {
   const s = SESS; if (!s || !s.show) return;
-  const r = +el.dataset.r, c = s.q.shift(); schedule(c, r); s.r[r]++;
-  if (r === 0) s.q.splice(Math.min(3, s.q.length), 0, c); else s.done++;
+  const r = +el.dataset.r, c = s.q.shift(), prev = srsMap()[c.id]; s.undo = { c, r, prev: prev ? { ...prev } : null, pos: -1 }; schedule(c, r); s.r[r]++;
+  if (r === 0) { s.undo.pos = Math.min(3, s.q.length); s.q.splice(s.undo.pos, 0, c); } else s.done++;
   s.show = false; S.noAnim = true; renderSession(); S.noAnim = false;
+};
+ACT['sess-undo'] = () => {
+  const s = SESS, u = s && s.undo; if (!u) return;
+  const m = srsMap(); if (u.prev) m[u.c.id] = u.prev; else delete m[u.c.id]; store.set(K.srs, m);
+  if (u.r === 0) { const i = s.q.indexOf(u.c, Math.max(0, u.pos)); if (i >= 0) s.q.splice(i, 1); } else s.done--;
+  s.r[u.r]--; s.q.unshift(u.c); s.show = true; s.undo = null; S.noAnim = true; renderSession(); S.noAnim = false;
 };
 ACT['sess-end'] = () => { endSession(); location.hash = '#/_/tarjetas'; if (S.view === 'session') { S.view = 'tool:tarjetas'; route(); } };
 
@@ -2085,8 +2105,9 @@ function finishQuiz() {
 }
 function onScopeInput(e) {
   const k = e.target.dataset && e.target.dataset.k, sc = e.target.dataset && e.target.dataset.scope; if (!k || !sc) return;
+  if (k === 'newlim') { store.set('rv-newlim', +e.target.value); rerender(); renderSide(); return; }
   const F = sc === 'cards' ? UI.cardsf : UI.quizf; F[k] = e.target.value;
-  if (k === 'subj') F.doc = '';
+  if (k === 'subj') { F.doc = ''; F.sec = ''; } else if (k === 'doc') F.sec = '';
   rerender();
 }
 
@@ -2408,6 +2429,7 @@ document.addEventListener('keydown', e => {
     if (SESS) {
       if ((k === ' ' || k === 'Enter') && !btn) { e.preventDefault(); if (!SESS.show) ACT['sess-show'](); }
       else if (/^[1-4]$/.test(k) && SESS.show) ACT.rate({ dataset: { r: String(+k - 1) } });
+      else if (k.toLowerCase() === 'z' && SESS.undo) ACT['sess-undo']();
     } else if (QZ) {
       if (k === 'Enter' && QZ.answered && !btn) ACT['quiz-next']();
       else if (/^[1-9]$/.test(k) && !QZ.answered) { const o = $$('.qo')[+k - 1]; if (o) o.click(); }
@@ -2866,18 +2888,84 @@ function extraInit() {
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
-/* ---------- Importar tarjetas desde un archivo (Pregunta @@ Respuesta) ---------- */
+/* ---------- Importar tarjetas desde un archivo (Anki TSV/CSV o «Pregunta @@ Respuesta») ---------- */
+const DIRECTIVE = /^#(separator|html|tags column|deck column|guid column|notetype column|columns|file format|notetype|deck|tags)\s*:/i;
+function htmlToMd(s, html) {
+  let t = String(s);
+  if (html || /<[a-z][^>]*>/i.test(t)) {
+    t = t.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(div|p|li|tr|h\d)>/gi, '\n').replace(/<(div|p)[^>]*>/gi, '\n').replace(/<li[^>]*>/gi, '- ')
+      .replace(/<(b|strong)[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**').replace(/<(i|em)[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*')
+      .replace(/<img[^>]*>/gi, '').replace(/<(?!\/?(?:sup|sub|u|code)\b)[^>]*>/gi, '');
+    const ta = document.createElement('textarea'); ta.innerHTML = t; t = ta.value;
+  }
+  return t.replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$').replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$').replace(/ /g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function splitDelim(text, d) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"' && f === '') q = true;
+    else if (c === d) { row.push(f); f = ''; }
+    else if (c === '\n') { row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+function secFromTag(tag) {
+  if (!tag) return '';
+  const segs = String(tag).split('::').filter(Boolean), first = norm(segs[0] || '');
+  if (segs.length > 1 && S.subjects.some(x => norm(x.key) === first)) segs.shift();
+  return segs.map(x => x.replace(/_/g, ' ')).join(' › ');
+}
 function parseCardFile(text) {
-  const out = []; let h = [], last = null; // h: encabezados vigentes (uno por nivel, en orden de aparición)
-  for (const raw of String(text).replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n')) {
-    const line = raw.trim(), hm = line.match(/^(#{1,6})\s+(.*)$/);
-    if (hm) { h = h.filter(x => x[0] !== hm[1].length); h.push([hm[1].length, hm[2].trim()]); last = null; continue; }
-    if (!line) { last = null; continue; }
-    const m = line.match(/^(.*?)\s*(?:@@|::|\t)\s*(.+)$/);
-    if (m && m[1]) { last = { q: m[1].trim(), a: m[2].trim(), sec: h.map(x => x[1]).join(' › ') }; out.push(last); }
-    else if (last) last.a += '\n' + line;
+  text = String(text).replace(/^﻿/, '').replace(/\r\n?/g, '\n');
+  const cfg = {}, lines = text.split('\n'); let k = 0;
+  while (k < lines.length && DIRECTIVE.test(lines[k].trim())) {
+    const m = lines[k].trim().match(/^#([a-z ]+?)\s*:\s*(.*)$/i); if (m) cfg[m[1].toLowerCase()] = m[2].trim(); k++;
+  }
+  const body = lines.slice(k).join('\n');
+  const tabLines = body.split('\n').filter(l => l.trim() && !/^#{1,6}\s/.test(l));
+  const isTsv = cfg.separator != null || (!body.includes('@@') && tabLines.length > 0 && tabLines.filter(l => l.includes('\t')).length / tabLines.length > .6);
+  const out = [];
+  if (isTsv) {
+    const sepName = (cfg.separator || 'tab').toLowerCase(), d = { tab: '\t', comma: ',', semicolon: ';', space: ' ', pipe: '|' }[sepName] || (sepName.length === 1 ? sepName : '\t');
+    const html = /^true$/i.test(cfg.html || ''), col = n => (n != null && /^\d+$/.test(String(n))) ? +n : 0;
+    const tagsCol = col(cfg['tags column']), special = new Set([tagsCol, col(cfg['deck column']), col(cfg['guid column']), col(cfg['notetype column'])].filter(Boolean));
+    for (const row of splitDelim(body, d)) {
+      if (row.length < 2 || !row.some(x => x.trim())) continue;
+      let tags = tagsCol ? row[tagsCol - 1] : '';
+      if (!tagsCol && row.length === 3 && /^\S+$/.test(row[2].trim())) { tags = row[2]; special.add(3); }
+      const fields = row.filter((_, i) => !special.has(i + 1));
+      let q = htmlToMd(fields[0] || '', html), a = fields.slice(1).map(x => htmlToMd(x, html)).filter(Boolean).join('\n\n');
+      if (/\{\{c\d+::/.test(q) && !a) { const src = q; q = src.replace(/\{\{c\d+::([\s\S]*?)(?:::[\s\S]*?)?\}\}/g, '[...]'); a = src.replace(/\{\{c\d+::([\s\S]*?)(?:::[\s\S]*?)?\}\}/g, '**$1**'); }
+      if (!q || !a) continue;
+      const tag = (tags || '').trim().split(/\s+/)[0] || '';
+      out.push({ q, a, sec: secFromTag(tag), tag });
+    }
+    out.fmt = 'Anki (TSV)'; out.firstTag = (out.find(c => c.tag) || {}).tag || '';
+  } else {
+    let h = [], last = null; // h: encabezados vigentes (uno por nivel, en orden de aparición)
+    for (const raw of body.split('\n')) {
+      const line = raw.trim(), hm = line.match(/^(#{1,6})\s+(.*)$/);
+      if (hm) { h = h.filter(x => x[0] !== hm[1].length); h.push([hm[1].length, hm[2].trim()]); last = null; continue; }
+      if (!line) { last = null; continue; }
+      const m = line.match(/^(.*?)\s*(?:@@|::|\t)\s*(.+)$/);
+      if (m && m[1]) { last = { q: htmlToMd(m[1]), a: htmlToMd(m[2]), sec: h.map(x => x[1]).join(' › '), tag: '' }; out.push(last); }
+      else if (last) last.a += '\n' + line;
+    }
+    out.fmt = 'Pregunta @@ Respuesta';
   }
   return out;
+}
+/* Si las etiquetas son del tipo «ST::T1::…», propone la asignatura y el resumen */
+function guessTarget(cards) {
+  const segs = String(cards.firstTag || '').split('::').filter(Boolean); if (!segs.length) return {};
+  const subj = S.subjects.find(x => norm(x.key) === norm(segs[0])); if (!subj) return {};
+  const m = (segs[1] || '').match(/^(?:t|tema|unidad|u)[\s_-]*0*(\d+)$/i); let doc = '';
+  if (m) { const re = new RegExp('(?:^|[^a-z0-9])(?:t|tema|unidad|u)[\\s_-]*0*' + m[1] + '(?![0-9])', 'i'); const c = subj.files.filter(f => re.test(f.name) || re.test(f.title)); if (c.length === 1) doc = c[0].path; }
+  return { subj: subj.key, doc };
 }
 ACT['card-import'] = () => {
   const subjs = S.subjects.map(s => [s.key, s.key + (s.name ? ' · ' + s.name : '')]);
@@ -2885,7 +2973,7 @@ ACT['card-import'] = () => {
   const docOpts = k => [['', 'Sin resumen concreto'], ...allDocs().filter(f => f.subj === k).map(f => [f.path, f.title])];
   formModal({
     title: 'Importar tarjetas', wide: true, submit: 'Importar',
-    text: 'Archivo de texto (.src, .txt, .md…) con una tarjeta por línea: <b>Pregunta @@ Respuesta</b>. Las líneas que empiezan por # se ignoran (se guardan como sección).',
+    text: 'Archivo exportado de <b>Anki</b> (.tsv/.txt con tabuladores; la 3.ª columna de etiquetas, p. ej. <code>ST::T1::Redes</code>, se usa como apartado) o texto con una tarjeta por línea: <b>Pregunta @@ Respuesta</b>.',
     fields: [
       { name: 'subj', label: 'Asignatura', type: 'select', value: first, options: subjs },
       { name: 'path', label: 'Resumen al que pertenecen', type: 'select', value: UI.cardsf.doc || '', options: docOpts(first) },
@@ -2902,11 +2990,14 @@ ACT['card-import'] = () => {
     }
   });
   const f = $('.ov form'); if (!f) return;
-  const file = $('input[type=file]', f); file.accept = '.src,.txt,.md,.markdown,.csv,text/*';
+  const file = $('input[type=file]', f); file.accept = '.tsv,.txt,.csv,.src,.md,.markdown,text/*';
   const ta = f.elements.text, info = document.createElement('div'); info.className = 'muted'; info.id = 'impInfo'; ta.after(info);
-  const count = () => { const n = parseCardFile(ta.value).length; info.textContent = ta.value.trim() ? `${n} tarjetas detectadas` : ''; };
+  const count = () => { const cs = parseCardFile(ta.value); const secs = new Set(cs.map(c => c.sec).filter(Boolean)).size; info.textContent = ta.value.trim() ? `${cs.length} tarjetas detectadas · formato ${cs.fmt}${secs ? ` · ${secs} apartados` : ''}` : ''; return cs; };
   ta.addEventListener('input', count);
-  file.addEventListener('change', async () => { const fl = file.files[0]; if (!fl) return; ta.value = await fl.text(); count(); });
+  file.addEventListener('change', async () => {
+    const fl = file.files[0]; if (!fl) return; ta.value = await fl.text(); const cs = count(), g = guessTarget(cs);
+    if (g.subj) { f.elements.subj.value = g.subj; f.elements.subj.dispatchEvent(new Event('change')); if (g.doc) f.elements.path.value = g.doc; }
+  });
   f.elements.subj.addEventListener('change', () => { f.elements.path.innerHTML = docOpts(f.elements.subj.value).map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); });
 };
 
