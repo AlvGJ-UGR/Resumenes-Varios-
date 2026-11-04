@@ -696,8 +696,10 @@ details.notes[open]>summary{margin-bottom:12px;color:var(--tx)}
 
 /* ===== Lectura cómoda ===== */
 .md{font-family:var(--read,var(--font));line-height:1.82}
-.page{grid-template-columns:minmax(0,var(--mw,720px)) 220px}
+@media (min-width:1281px){.page{grid-template-columns:minmax(0,var(--mw,720px)) 220px}}
+@media (max-width:1280px){.page{grid-template-columns:minmax(0,var(--mw,720px))}}
 body.focus .page{grid-template-columns:minmax(0,var(--mw,720px))}
+@media (max-width:1000px){.page{display:block}.view,.view.docv{max-width:none}#main{padding-left:16px;padding-right:16px}}
 .md p,.md ul,.md ol,.md blockquote,.md table{margin-bottom:1.2em}
 .md li{margin:.28em 0}
 .md h2{border-bottom:0;padding-bottom:0;margin-top:2.3em}
@@ -708,6 +710,7 @@ body.focus .page{grid-template-columns:minmax(0,var(--mw,720px))}
 .md strong{font-weight:650;color:var(--tx)}
 @media (min-width:1001px){body.auto #main{padding-left:clamp(24px,5vw,80px);padding-right:clamp(24px,5vw,80px)}}
 body.auto .page,body.auto.noside .page{justify-content:center}
+@media (max-width:640px){.dh-bar .stseg{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px}.dh-bar .stseg button{justify-content:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px}.dh-bar .stseg button.on{border-color:currentColor}.dh-bar .dh-act{width:100%}}
 
 </style>
 </head>
@@ -1961,7 +1964,7 @@ function cardsView(q) {
     const st = !s ? '<span class="bd">Nueva</span>' : s.due <= t ? '<span class="bd bad">Pendiente</span>' : `<span class="bd">En ${diffDays(s.due, t)} d</span>`;
     return `<div class="dr cr" style="--c:${sub ? sub.color : 'var(--blue)'}"><a class="dr-a"${d ? ` href="${href(d.path)}"` : ''}><span class="dr-t">${renderInline(c.q)}</span><span class="dr-m">${sub ? `<span class="bd sb">${ico(sub.icon)}${esc(sub.key)}</span>` : ''}${st}${d ? `<span class="bd">${esc(d.title)}</span>` : '<span class="bd">Mía</span>'}</span></a>${c.user ? `<button class="ib sm" data-act="card-edit" data-id="${c.uid}" title="Editar" aria-label="Editar">${ico('edit')}</button><button class="ib sm" data-act="card-del" data-id="${c.uid}" title="Eliminar" aria-label="Eliminar">${ico('trash')}</button>` : ''}</div>`;
   };
-  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
+  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button><button class="btn" data-act="card-purge">${ico('trash')} Eliminar varias</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
     <div class="pnl libf"><label class="sel"><span>Asignatura</span><select data-k="subj" data-scope="cards">${optHtml(subjOptions(), F.subj)}</select></label><label class="sel"><span>Resumen</span><select data-k="doc" data-scope="cards">${optHtml([['', 'Todos'], ...docsWith.map(d => [d.path, `${d.title} (${cnt[d.path]})`])], F.doc)}</select></label></div>
     <div class="kps three"><div class="kp static"><span class="kp-t"><small>Total</small><b>${pool.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Pendientes hoy</small><b>${due.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Dominadas (≥21 d)</small><b>${pool.filter(c => (m[c.id] || {}).iv >= 21).length}</b></span></div></div>
     <div class="dh-act"><button class="btn pri" data-act="cards-start" ${due.length ? '' : 'disabled'}>${ico('play')} Estudiar ahora (${due.length})</button><button class="btn" data-act="cards-start" data-all="1" ${pool.length ? '' : 'disabled'}>${ico('repeat')} Repasar todas (${pool.length})</button></div>
@@ -2905,6 +2908,34 @@ ACT['card-import'] = () => {
   ta.addEventListener('input', count);
   file.addEventListener('change', async () => { const fl = file.files[0]; if (!fl) return; ta.value = await fl.text(); count(); });
   f.elements.subj.addEventListener('change', () => { f.elements.path.innerHTML = docOpts(f.elements.subj.value).map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); });
+};
+
+/* ---------- Eliminar tarjetas en bloque ---------- */
+ACT['card-purge'] = () => {
+  const mine = store.get(K.uc, []), F = UI.cardsf;
+  const inFilter = mine.filter(c => (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc));
+  const bySubj = {}; mine.forEach(c => { bySubj[c.subj || ''] = (bySubj[c.subj || ''] || 0) + 1; });
+  const opts = [['all', `Todas mis tarjetas (${mine.length})`]];
+  if (F.subj || F.doc) opts.unshift(['filter', `Solo las del filtro actual (${inFilter.length})`]);
+  Object.keys(bySubj).forEach(k => opts.push(['s:' + k, `Toda la asignatura ${k || '(sin asignatura)'} (${bySubj[k]})`]));
+  const docs = {}; mine.forEach(c => { if (c.path) docs[c.path] = (docs[c.path] || 0) + 1; });
+  Object.keys(docs).forEach(p => { const f = S.byPath.get(p); opts.push(['d:' + p, `Resumen: ${f ? f.title : p} (${docs[p]})`]); });
+  if (!mine.length) { toast('No tienes tarjetas propias que eliminar'); return; }
+  formModal({
+    title: 'Eliminar tarjetas', danger: true, submit: 'Eliminar', wide: true,
+    text: 'Se borran tus tarjetas (creadas o importadas) y su progreso de repaso. Las que vienen de bloques <code>flashcards</code> dentro de los resúmenes no se pueden borrar desde aquí: están en el archivo del repositorio.',
+    fields: [{ name: 'scope', label: '¿Cuáles?', type: 'select', value: opts[0][0], options: opts }],
+    onSubmit: v => {
+      const sel = c => v.scope === 'all' || (v.scope === 'filter' && (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc)) || (v.scope.startsWith('s:') && (c.subj || '') === v.scope.slice(2)) || (v.scope.startsWith('d:') && c.path === v.scope.slice(2));
+      const gone = new Set(mine.filter(sel).map(c => 'u:' + c.id));
+      confirmModal(`¿Seguro? Se eliminarán ${gone.size} tarjetas. No se puede deshacer.`, () => {
+        store.set(K.uc, mine.filter(c => !gone.has('u:' + c.id)));
+        const m = store.get(K.srs, {}); Object.keys(m).forEach(k => { if (gone.has(k)) delete m[k]; }); store.set(K.srs, m);
+        toast(`${gone.size} tarjetas eliminadas`); rerender(); renderSide();
+      }, 'Eliminar');
+      return true;
+    }
+  });
 };
 
 </script>
