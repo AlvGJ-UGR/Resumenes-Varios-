@@ -871,7 +871,7 @@ const K = { st: 'rv-st', fav: 'rv-fav', hist: 'rv-hist', exams: 'rv-exams', task
 /* ---------- Estado global ---------- */
 const S = { subjects: [], byPath: new Map(), bySubj: new Map(), view: '', tok: 0, noAnim: false, offline: false, curDoc: null, cur: null, refs: new Map() };
 const IDX = { started: false, ready: false, done: 0, total: 0 };
-const UI = { lib: { q: '', subj: '', tipo: '', dif: '', est: '', tag: '', tema: '', fav: false }, form: { subj: '', q: '', meta: false }, map: { subj: '' }, cal: { m: null, d: null }, taskf: 'pend', cardsf: { subj: '', doc: '', sec: '', n: '20' }, quizf: { subj: '', doc: '', n: '10', lvl: 'hard' } };
+const UI = { lib: { q: '', subj: '', tipo: '', dif: '', est: '', tag: '', tema: '', fav: false }, form: { subj: '', q: '', meta: false }, map: { subj: '' }, cal: { m: null, d: null }, taskf: 'pend', cardsf: { subj: '', doc: '', sec: '', topic: '', n: '20', lim: 60 }, quizf: { subj: '', doc: '', sec: '', topic: '', n: '10', lvl: 'hard' } };
 const allDocs = () => S.subjects.flatMap(s => s.files);
 const ACT = {};   // acciones por data-act
 
@@ -1949,7 +1949,22 @@ ACT['rev-add'] = el => {
 
 /* ---------- Tarjetas de memoria (repetición espaciada) ---------- */
 let SESS = null;
-function cardPool() { const F = UI.cardsf; return allCards().filter(c => (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc) && (!F.sec || c.sec === F.sec)); }
+const topicOf = c => c.sec ? c.sec.split(' › ')[0] : '';
+const cardFilter = F => c => (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc) && (!F.topic || topicOf(c) === F.topic) && (!F.sec || c.sec === F.sec);
+function cardPool() { return allCards().filter(cardFilter(UI.cardsf)); }
+/* Selectores encadenados: asignatura → tema → apartado → resumen (compartidos por Tarjetas y Quiz) */
+function scopeSelects(F, scope, quizDocs) {
+  const inS = allCards().filter(c => !F.subj || c.subj === F.subj), nat = (a, b) => a.localeCompare(b, 'es', { numeric: true });
+  const cnt = {}, tcnt = {}, scnt = {};
+  inS.forEach(c => { if (c.path) cnt[c.path] = (cnt[c.path] || 0) + 1; const t = topicOf(c); if (t) tcnt[t] = (tcnt[t] || 0) + 1; if (c.sec && (!F.topic || topicOf(c) === F.topic)) scnt[c.sec] = (scnt[c.sec] || 0) + 1; });
+  const docs = allDocs().filter(d => (!F.subj || d.subj === F.subj) && (cnt[d.path] || (quizDocs && d.quiz.length)));
+  const sel = (label, k, opts, val) => `<label class="sel"><span>${label}</span><select data-k="${k}" data-scope="${scope}">${optHtml(opts, val)}</select></label>`;
+  const topics = Object.keys(tcnt).sort(nat), secs = Object.keys(scnt).sort(nat);
+  return sel('Asignatura', 'subj', subjOptions(), F.subj)
+    + (topics.length ? sel('Tema', 'topic', [['', 'Todos los temas'], ...topics.map(k => [k, `${k} (${tcnt[k]})`])], F.topic) : '')
+    + (secs.length > 1 ? sel('Apartado', 'sec', [['', 'Todos los apartados'], ...secs.map(k => [k, `${k} (${scnt[k]})`])], F.sec) : '')
+    + sel('Resumen', 'doc', [['', docs.length ? 'Todos' : 'Ninguno vinculado'], ...docs.map(d => [d.path, `${d.title} (${(cnt[d.path] || 0) + (quizDocs ? d.quiz.length : 0)})`])], F.doc);
+}
 function nextState(c, r) {
   const m = srsMap(), st = { ...(m[c.id] || { ef: 2.5, iv: 0, reps: 0 }) };
   if (r === 0) { st.reps = 0; st.iv = 0; st.ef = Math.max(1.3, st.ef - 0.2); st.due = today(); }
@@ -1966,23 +1981,20 @@ const ivLabel = (c, r) => { if (r === 0) return 'ahora'; const d = nextState(c, 
 function cardsView(q) {
   if (needIdx('tarjetas', 'Tarjetas')) return;
   const F = UI.cardsf;
-  if (S.fresh) { F.subj = (q && q.get('subj')) || ''; F.doc = (q && q.get('doc')) || ''; F.sec = ''; }
+  if (S.fresh) { F.subj = (q && q.get('subj')) || ''; F.doc = (q && q.get('doc')) || ''; F.sec = ''; F.topic = ''; F.lim = 60; }
   if (S.fresh && q && q.get('go') === '1') { const l = shuffle(dueCards(cardPool())); if (l.length) { startSession(l.slice(0, +F.n >= 999 ? l.length : +F.n || 20)); return; } toast('No hay tarjetas pendientes en este tema'); }
   const pool = cardPool(), due = dueCards(pool), m = srsMap(), t = today();
-  const cnt = {}; allCards().forEach(c => { if (c.path) cnt[c.path] = (cnt[c.path] || 0) + 1; });
-  const docsWith = allDocs().filter(d => cnt[d.path] && (!F.subj || d.subj === F.subj));
-  const secCnt = {}; allCards().filter(c => c.sec && (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc)).forEach(c => { secCnt[c.sec] = (secCnt[c.sec] || 0) + 1; });
-  const secOpts = [['', 'Todos los apartados'], ...Object.keys(secCnt).sort((a, b) => a.localeCompare(b, 'es', { numeric: true })).map(k => [k, `${k} (${secCnt[k]})`])];
+  const unlinked = allCards().filter(c => c.user && !c.path).length;
   const row = c => {
     const s = m[c.id], d = c.path && S.byPath.get(c.path), sub = S.bySubj.get(c.subj);
     const st = !s ? '<span class="bd">Nueva</span>' : s.due <= t ? '<span class="bd bad">Pendiente</span>' : `<span class="bd">En ${diffDays(s.due, t)} d</span>`;
     return `<div class="dr cr" style="--c:${sub ? sub.color : 'var(--blue)'}"><a class="dr-a"${d ? ` href="${href(d.path)}"` : ''}><span class="dr-t">${renderInline(c.q)}</span><span class="dr-m">${sub ? `<span class="bd sb">${ico(sub.icon)}${esc(sub.key)}</span>` : ''}${st}${d ? `<span class="bd">${esc(d.title)}</span>` : '<span class="bd">Mía</span>'}${c.sec ? `<span class="bd">${esc(c.sec)}</span>` : ''}</span></a>${c.user ? `<button class="ib sm" data-act="card-edit" data-id="${c.uid}" title="Editar" aria-label="Editar">${ico('edit')}</button><button class="ib sm" data-act="card-del" data-id="${c.uid}" title="Eliminar" aria-label="Eliminar">${ico('trash')}</button>` : ''}</div>`;
   };
-  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button><button class="btn" data-act="card-purge">${ico('trash')} Eliminar varias</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
-    <div class="pnl libf"><label class="sel"><span>Asignatura</span><select data-k="subj" data-scope="cards">${optHtml(subjOptions(), F.subj)}</select></label><label class="sel"><span>Resumen</span><select data-k="doc" data-scope="cards">${optHtml([['', 'Todos'], ...docsWith.map(d => [d.path, `${d.title} (${cnt[d.path]})`])], F.doc)}</select></label>${secOpts.length > 1 ? `<label class="sel"><span>Apartado</span><select data-k="sec" data-scope="cards">${optHtml(secOpts, F.sec)}</select></label>` : ''}<label class="sel"><span>Por sesión</span><select data-k="n" data-scope="cards">${optHtml([['10', '10'], ['20', '20'], ['40', '40'], ['80', '80'], ['999', 'Todas']], F.n)}</select></label><label class="sel"><span>Nuevas al día</span><select data-k="newlim" data-scope="cards">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['40', '40'], ['100', '100'], ['9999', 'Sin límite']], newLimit())}</select></label></div>
+  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button>${unlinked ? `<button class="btn" data-act="card-link">${ico('link')} Vincular a resumen (${unlinked})</button>` : ''}<button class="btn" data-act="card-purge">${ico('trash')} Eliminar varias</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
+    <div class="pnl libf">${scopeSelects(F, 'cards')}<label class="sel"><span>Por sesión</span><select data-k="n" data-scope="cards">${optHtml([['10', '10'], ['20', '20'], ['40', '40'], ['80', '80'], ['999', 'Todas']], F.n)}</select></label><label class="sel"><span>Nuevas al día</span><select data-k="newlim" data-scope="cards">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['40', '40'], ['100', '100'], ['9999', 'Sin límite']], newLimit())}</select></label></div>
     <div class="kps three"><div class="kp static"><span class="kp-t"><small>Total</small><b>${pool.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Pendientes hoy</small><b>${due.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Dominadas (≥21 d)</small><b>${pool.filter(c => (m[c.id] || {}).iv >= 21).length}</b></span></div></div>
     <div class="dh-act"><button class="btn pri" data-act="cards-start" ${due.length ? '' : 'disabled'}>${ico('play')} Estudiar ahora (${due.length})</button><button class="btn" data-act="cards-start" data-all="1" ${pool.length ? '' : 'disabled'}>${ico('repeat')} Repasar todas (${pool.length})</button></div>
-    ${pool.length ? `<div class="dl">${pool.map(row).join('')}</div>` : emptyBox('cards', 'Aún no hay tarjetas.', 'Crea una con «Nueva tarjeta» o añade un bloque <code>flashcards</code> a un resumen (mira la Ayuda).')}`);
+    ${pool.length ? `<div class="dl">${pool.slice(0, F.lim || 60).map(row).join('')}</div>${pool.length > (F.lim || 60) ? `<p class="center"><button class="btn" data-act="cards-more">Mostrar más (${pool.length - (F.lim || 60)})</button></p>` : ''}` : emptyBox('cards', 'Aún no hay tarjetas.', 'Crea una con «Nueva tarjeta» o añade un bloque <code>flashcards</code> a un resumen (mira la Ayuda).')}`);
 }
 function cardForm(c, pre) {
   formModal({
@@ -2003,6 +2015,7 @@ function cardForm(c, pre) {
   });
 }
 ACT['card-new'] = () => cardForm(null);
+ACT['cards-more'] = () => { UI.cardsf.lim = (UI.cardsf.lim || 60) + 100; rerender(); };
 ACT['card-edit'] = el => cardForm(allCards().find(c => c.uid === el.dataset.id));
 ACT['card-del'] = el => confirmModal('¿Eliminar esta tarjeta?', () => { store.set(K.uc, store.get(K.uc, []).filter(c => c.id !== el.dataset.id)); rerender(); renderSide(); }, 'Eliminar');
 ACT['cards-start'] = el => {
@@ -2046,7 +2059,8 @@ ACT['sess-end'] = () => { endSession(); location.hash = '#/_/tarjetas'; if (S.vi
 /* ---------- Autoevaluación ---------- */
 /* ---------- Opciones falsas plausibles para los quizzes ---------- */
 const STOPW = new Set('de la el los las un una unos unas y o u en al del por para con sin que se su sus es son ser como mas muy lo le les te tu mi me no si este esta estos estas ese esa eso aquel the of and to in is are'.split(' '));
-const toks = t => norm(String(t)).replace(/[^a-z0-9ñ\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !STOPW.has(w));
+const tokMemo = new Map();
+const toks = t => { t = String(t); let r = tokMemo.get(t); if (!r) { r = norm(t).replace(/[^a-z0-9ñ\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !STOPW.has(w)); if (tokMemo.size > 3000) tokMemo.clear(); tokMemo.set(t, r); } return r; };
 const plain = t => String(t).replace(/[*_`$]/g, '').replace(/\s+/g, ' ').trim();
 function jacc(a, b) { const A = new Set(toks(a)), B = new Set(toks(b)); let i = 0; A.forEach(w => { if (B.has(w)) i++; }); return i / Math.max(1, A.size + B.size - i); }
 function simScore(a, b) { const la = a.length, lb = b.length; return jacc(a, b) * .6 + Math.min(la, lb) / Math.max(la, lb, 1) * .4; }
@@ -2075,7 +2089,8 @@ function mutateAnswer(ans, sibs) {
 /* lvl: easy = al azar de la asignatura · med = respuestas parecidas del mismo tema · hard = parecidas + variaciones de la respuesta correcta */
 function makeDistractors(c, cards, lvl) {
   const ca = plain(c.a), cn = norm(ca);
-  const pool = cards.filter(x => x.id !== c.id && plain(x.a) && norm(plain(x.a)) !== cn);
+  const same = cards.filter(x => x.subj === c.subj), base = same.length >= 8 ? same : cards;
+  const pool = base.filter(x => x.id !== c.id && plain(x.a) && norm(plain(x.a)) !== cn);
   const uniq = new Map(); pool.forEach(x => { const k = norm(plain(x.a)); if (!uniq.has(k)) uniq.set(k, x); });
   const cand = [...uniq.values()];
   if (lvl === 'easy') {
@@ -2097,31 +2112,33 @@ function makeDistractors(c, cards, lvl) {
 }
 let QZ = null;
 function quizPool(F) {
-  const out = [], docs = allDocs().filter(d => (!F.subj || d.subj === F.subj) && (!F.doc || d.path === F.doc));
-  for (const d of docs) for (const q of d.quiz) out.push({ q: q.q, opts: q.opts, ok: q.ok, exp: q.exp, path: d.path, subj: d.subj });
-  const cards = allCards(), mine = cards.filter(c => (!F.subj || c.subj === F.subj) && (!F.doc || c.path === F.doc));
-  for (const c of mine) {
-    const dis = makeDistractors(c, cards, F.lvl || 'hard');
-    if (dis.length < 2) continue;
-    const opts = shuffle([c.a, ...dis]); out.push({ q: c.q, opts, ok: [opts.indexOf(c.a)], exp: '', path: c.path, subj: c.subj, fromCard: true, cid: c.id });
-  }
+  const out = [];
+  if (!F.topic && !F.sec) for (const d of allDocs().filter(d => (!F.subj || d.subj === F.subj) && (!F.doc || d.path === F.doc))) for (const q of d.quiz) out.push({ q: q.q, opts: q.opts, ok: q.ok, exp: q.exp, path: d.path, subj: d.subj });
+  // las opciones falsas de las tarjetas se calculan solo para las preguntas que se van a hacer
+  for (const c of allCards().filter(cardFilter(F))) out.push({ lazy: true, card: c, q: c.q, path: c.path, subj: c.subj, cid: c.id, fromCard: true, exp: '' });
   return out;
+}
+function fillQuestion(q, cards, lvl) {
+  if (!q.lazy) return q;
+  const dis = makeDistractors(q.card, cards, lvl);
+  if (dis.length < 2) return null;
+  const opts = shuffle([q.card.a, ...dis]);
+  return { q: q.q, opts, ok: [opts.indexOf(q.card.a)], exp: '', path: q.path, subj: q.subj, fromCard: true, cid: q.cid };
 }
 function quizView(q) {
   if (needIdx('quiz', 'Autoevaluación')) return;
   const F = UI.quizf;
-  if (S.fresh) { F.subj = (q && q.get('subj')) || ''; F.doc = (q && q.get('doc')) || ''; }
+  if (S.fresh) { F.subj = (q && q.get('subj')) || ''; F.doc = (q && q.get('doc')) || ''; F.sec = ''; F.topic = ''; }
   const pool = quizPool(F), hist = store.get(K.log, []).filter(e => e.k === 'quiz').slice(-8).reverse();
-  const cnt = {}; allCards().forEach(c => { if (c.path) cnt[c.path] = (cnt[c.path] || 0) + 1; });
-  const docsWith = allDocs().filter(d => (d.quiz.length || cnt[d.path]) && (!F.subj || d.subj === F.subj));
   V(`<h1 class="ph">${ico('quiz')} Autoevaluación</h1><p class="sub">Cuestionarios con corrección automática. Se generan con los bloques <code>quiz</code> de tus resúmenes y con tus tarjetas de memoria.</p>
-    <div class="pnl libf"><label class="sel"><span>Asignatura</span><select data-k="subj" data-scope="quiz">${optHtml(subjOptions(), F.subj)}</select></label><label class="sel"><span>Resumen</span><select data-k="doc" data-scope="quiz">${optHtml([['', 'Todos'], ...docsWith.map(d => [d.path, `${d.title} (${d.quiz.length + (cnt[d.path] || 0)})`])], F.doc)}</select></label><label class="sel"><span>Opciones falsas</span><select data-k="lvl" data-scope="quiz">${optHtml([['easy', 'Fáciles (al azar)'], ['med', 'Parecidas'], ['hard', 'Muy parecidas (difícil)']], F.lvl)}</select></label><label class="sel"><span>Preguntas</span><select data-k="n" data-scope="quiz">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['999', 'Todas']], F.n)}</select></label></div>
+    <div class="pnl libf">${scopeSelects(F, 'quiz', true)}<label class="sel"><span>Opciones falsas</span><select data-k="lvl" data-scope="quiz">${optHtml([['easy', 'Fáciles (al azar)'], ['med', 'Parecidas'], ['hard', 'Muy parecidas (difícil)']], F.lvl)}</select></label><label class="sel"><span>Preguntas</span><select data-k="n" data-scope="quiz">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['999', 'Todas']], F.n)}</select></label></div>
     <div class="dh-act"><button class="btn pri" data-act="quiz-start" ${pool.length ? '' : 'disabled'}>${ico('play')} Empezar (${Math.min(pool.length, +F.n)} de ${pool.length} disponibles)</button></div>
     ${pool.length ? '' : emptyBox('quiz', 'No hay preguntas disponibles.', 'Añade un bloque <code>quiz</code> a un resumen o crea tarjetas (mira la Ayuda).')}
     ${hist.length ? `<h3 class="lh">Últimos resultados</h3><div class="dl">${hist.map(e => `<div class="dr"><span class="dot-b static"><span class="dot ${e.ok / e.n >= 0.7 ? 'dom' : e.ok / e.n >= 0.5 ? 'repasar' : 'pend'}"></span></span><span class="dr-a"><span class="dr-t">${e.ok}/${e.n} · ${Math.round(e.ok / e.n * 100)}%</span><span class="dr-m"><span class="bd">${ago(e.t)}</span></span></span></div>`).join('')}</div>` : ''}`);
 }
 ACT['quiz-start'] = () => {
-  const F = UI.quizf, pool = shuffle(quizPool(F)).slice(0, +F.n);
+  const F = UI.quizf, raw = shuffle(quizPool(F)), cards = allCards(), pool = [];
+  for (const q of raw) { if (pool.length >= +F.n) break; const f = fillQuestion(q, cards, F.lvl || 'hard'); if (f) pool.push(f); }
   if (!pool.length) return toast('No hay preguntas disponibles');
   QZ = { qs: pool, i: 0, ok: 0, wrong: [], answered: false }; S.view = 'session'; S.cur = null; applyAuto(); renderQuiz(); renderSide();
 };
@@ -2156,7 +2173,7 @@ function onScopeInput(e) {
   const k = e.target.dataset && e.target.dataset.k, sc = e.target.dataset && e.target.dataset.scope; if (!k || !sc) return;
   if (k === 'newlim') { store.set('rv-newlim', +e.target.value); rerender(); renderSide(); return; }
   const F = sc === 'cards' ? UI.cardsf : UI.quizf; F[k] = e.target.value;
-  if (k === 'subj') { F.doc = ''; F.sec = ''; } else if (k === 'doc') F.sec = '';
+  if (k === 'subj') { F.doc = ''; F.sec = ''; F.topic = ''; } else if (k === 'topic') { F.sec = ''; F.doc = ''; } else if (k === 'sec' || k === 'doc') { if (k === 'doc') F.sec = ''; }
   rerender();
 }
 
@@ -3009,13 +3026,35 @@ function parseCardFile(text) {
   return out;
 }
 /* Si las etiquetas son del tipo «ST::T1::…», propone la asignatura y el resumen */
+function docForTopic(subj, topic) {
+  const files = allDocs().filter(f => f.subj === subj); if (!topic) return '';
+  const n = (String(topic).match(/(\d+)/) || [])[1]; let c = [];
+  if (n) { const re = new RegExp('(?:^|[^a-z0-9])(?:t|tema|unidad|u|' + String(subj).replace(/[^a-z0-9]/gi, '') + ')[\\s_-]*0*' + n + '(?![0-9])', 'i'); c = files.filter(f => re.test(f.name || '') || re.test(f.title || '') || re.test(String(f.path).split('/').pop())); }
+  if (c.length !== 1) { const nt = norm(topic); c = files.filter(f => norm(f.title || '') === nt || norm(f.name || '') === nt); }
+  return c.length === 1 ? c[0].path : '';
+}
 function guessTarget(cards) {
   const segs = String(cards.firstTag || '').split('::').filter(Boolean); if (!segs.length) return {};
   const subj = S.subjects.find(x => norm(x.key) === norm(segs[0])); if (!subj) return {};
-  const m = (segs[1] || '').match(/^(?:t|tema|unidad|u)[\s_-]*0*(\d+)$/i); let doc = '';
-  if (m) { const re = new RegExp('(?:^|[^a-z0-9])(?:t|tema|unidad|u)[\\s_-]*0*' + m[1] + '(?![0-9])', 'i'); const c = subj.files.filter(f => re.test(f.name) || re.test(f.title)); if (c.length === 1) doc = c[0].path; }
-  return { subj: subj.key, doc };
+  return { subj: subj.key, doc: docForTopic(subj.key, segs[1] || '') };
 }
+ACT['card-link'] = () => {
+  const mine = store.get(K.uc, []), groups = {};
+  mine.filter(c => !c.path && c.subj).forEach(c => { const t = topicOf({ sec: c.sec || '' }) || '', k = c.subj + '\u0001' + t; (groups[k] = groups[k] || { subj: c.subj, topic: t, n: 0 }).n++; });
+  const gs = Object.values(groups).sort((a, b) => (a.subj + a.topic).localeCompare(b.subj + b.topic, 'es', { numeric: true })).slice(0, 30);
+  if (!gs.length) { toast('No hay tarjetas sin vincular'); return; }
+  formModal({
+    title: 'Vincular tarjetas a resúmenes', wide: true, submit: 'Vincular',
+    text: 'Elige a qué resumen pertenece cada tema de tus tarjetas importadas. Ya detectado automáticamente donde ha sido posible.',
+    fields: gs.map((g, i) => ({ name: 'g' + i, label: `${g.subj} · ${g.topic || 'Sin tema'} (${g.n})`, type: 'select', value: docForTopic(g.subj, g.topic), options: [['', 'No vincular'], ...allDocs().filter(f => f.subj === g.subj).map(f => [f.path, f.title])] })),
+    onSubmit: v => {
+      const map = {}; gs.forEach((g, i) => { if (v['g' + i]) map[g.subj + '\u0001' + g.topic] = v['g' + i]; });
+      let n = 0; const all = store.get(K.uc, []);
+      all.forEach(c => { if (!c.path && c.subj) { const p = map[c.subj + '\u0001' + (topicOf({ sec: c.sec || '' }) || '')]; if (p) { c.path = p; n++; } } });
+      store.set(K.uc, all); toast(`${n} tarjetas vinculadas`); rerender();
+    }
+  });
+};
 ACT['card-import'] = () => {
   const subjs = S.subjects.map(s => [s.key, s.key + (s.name ? ' · ' + s.name : '')]);
   const first = (UI.cardsf.subj && subjs.some(x => x[0] === UI.cardsf.subj)) ? UI.cardsf.subj : (subjs[0] || [''])[0];
