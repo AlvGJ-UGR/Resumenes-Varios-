@@ -717,6 +717,19 @@ body.auto .page,body.auto.noside .page{justify-content:center}
 .flash-c .fq{font-size:clamp(1.25rem,2.6vw,1.6rem)}
 .flash-c .fa{font-size:clamp(1.05rem,2.2vw,1.25rem);color:var(--tx)}
 
+/* Mejoras de estudio */
+.recall{width:100%;margin-top:14px;resize:vertical}
+.recall-t{margin-top:12px;padding:10px 12px;border-left:3px solid var(--line2);color:var(--tx2);text-align:left}
+.recall-t small{display:block;font-size:.72em;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.tmr{font-variant-numeric:tabular-nums;font-weight:600;color:var(--blue)}.tmr.low{color:var(--bad)}
+.tm-row{display:grid;grid-template-columns:90px 1fr 90px;gap:10px;align-items:center;margin:8px 0;font-size:.92em}
+.tm-bar{display:block;height:8px;border-radius:4px;background:var(--s3);overflow:hidden;margin-top:6px}.tm-row .tm-bar{margin:0}
+.tm-bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+.tm{margin-top:20px}
+.sess-h .btn.sm{white-space:nowrap}
+@media(max-width:640px){.sess-h{flex-wrap:wrap}.tm-row{grid-template-columns:70px 1fr 80px}}
+@media print{.cheat .ch-g{columns:3;column-gap:12px;font-size:9pt;color:#000}.cheat .ch-i{break-inside:avoid;border:1px solid #bbb;padding:5px 7px;margin:0 0 7px}.cheat .ch-i small{display:block;color:#444;font-size:7.5pt;margin-top:3px}}
+
 </style>
 </head>
 <body>
@@ -1440,8 +1453,11 @@ const TOOLS = [
   { id: 'biblioteca', main: 1, label: 'Biblioteca', short: 'Biblioteca', icon: 'library' },
   { id: 'favoritos', main: 1, label: 'Favoritos', short: 'Favoritos', icon: 'star' },
   { id: 'historial', label: 'Recientes', short: 'Recientes', icon: 'clock' },
+  { id: 'hoy', main: 1, label: 'Sesión de hoy', short: 'Hoy', icon: 'bolt', badge: 'today' },
   { id: 'tarjetas', main: 1, label: 'Tarjetas de memoria', short: 'Tarjetas', icon: 'cards', badge: 'cards' },
   { id: 'quiz', main: 1, label: 'Autoevaluación', short: 'Quiz', icon: 'quiz' },
+  { id: 'debiles', label: 'Puntos débiles', short: 'Débiles', icon: 'target' },
+  { id: 'glosario', label: 'Glosario', short: 'Glosario', icon: 'book' },
   { id: 'formulas', label: 'Biblioteca de fórmulas', short: 'Fórmulas', icon: 'sigma' },
   { id: 'mapas', label: 'Mapas conceptuales', short: 'Mapas', icon: 'map' },
   { id: 'examenes', label: 'Planificador de exámenes', short: 'Exámenes', icon: 'target' },
@@ -1489,6 +1505,7 @@ ACT.open = el => {
 function badgeFor(t) {
   try {
     if (t.badge === 'cards') return IDX.ready ? dueCards().length : 0;
+    if (t.badge === 'today') return dueCount();
     if (t.badge === 'tasks') return openTasks().length;
     if (t.badge === 'rev') return dueReviews().length;
   } catch {}
@@ -1822,7 +1839,7 @@ const isDue = (c, m) => { const s = (m || srsMap())[c.id]; return !s || s.due <=
 const newLimit = () => { const v = +store.get('rv-newlim', 20); return v >= 0 ? v : 20; };
 const dueCards = list => {
   const m = srsMap(), t = today(), lim = newLimit(); let used = Object.values(m).filter(x => x && x.first === t).length; const out = [];
-  for (const c of (list || allCards())) { const x = m[c.id]; if (!x) { if (used >= lim) continue; used++; out.push(c); } else if (x.due <= t) out.push(c); }
+  for (const c of (list || allCards())) { const x = m[c.id]; if (!x) { if (used >= lim) continue; used++; out.push(c); } else if (x.due <= t && !x.susp && !(x.snooze && x.snooze > t)) out.push(c); }
   return out;
 };
 const subjOptions = (all = 'Todas') => [['', all], ...S.subjects.map(s => [s.key, s.key + (s.name ? ' · ' + s.name : '')])];
@@ -1967,7 +1984,7 @@ function scopeSelects(F, scope, quizDocs) {
 }
 function nextState(c, r) {
   const m = srsMap(), st = { ...(m[c.id] || { ef: 2.5, iv: 0, reps: 0 }) };
-  if (r === 0) { st.reps = 0; st.iv = 0; st.ef = Math.max(1.3, st.ef - 0.2); st.due = today(); }
+  if (r === 0) { st.lap = (st.lap || 0) + 1; st.reps = 0; st.iv = 0; st.ef = Math.max(1.3, st.ef - 0.2); st.due = today(); }
   else {
     if (r === 1) { st.iv = Math.max(1, Math.round((st.iv || 1) * 1.2)); st.ef = Math.max(1.3, st.ef - 0.15); }
     else if (r === 2) st.iv = st.reps === 0 ? 1 : st.reps === 1 ? 3 : Math.round(st.iv * st.ef);
@@ -1990,7 +2007,7 @@ function cardsView(q) {
     const st = !s ? '<span class="bd">Nueva</span>' : s.due <= t ? '<span class="bd bad">Pendiente</span>' : `<span class="bd">En ${diffDays(s.due, t)} d</span>`;
     return `<div class="dr cr" style="--c:${sub ? sub.color : 'var(--blue)'}"><a class="dr-a"${d ? ` href="${href(d.path)}"` : ''}><span class="dr-t">${renderInline(c.q)}</span><span class="dr-m">${sub ? `<span class="bd sb">${ico(sub.icon)}${esc(sub.key)}</span>` : ''}${st}${d ? `<span class="bd">${esc(d.title)}</span>` : '<span class="bd">Mía</span>'}${c.sec ? `<span class="bd">${esc(c.sec)}</span>` : ''}</span></a>${c.user ? `<button class="ib sm" data-act="card-edit" data-id="${c.uid}" title="Editar" aria-label="Editar">${ico('edit')}</button><button class="ib sm" data-act="card-del" data-id="${c.uid}" title="Eliminar" aria-label="Eliminar">${ico('trash')}</button>` : ''}</div>`;
   };
-  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button>${unlinked ? `<button class="btn" data-act="card-link">${ico('link')} Vincular a resumen (${unlinked})</button>` : ''}<button class="btn" data-act="card-purge">${ico('trash')} Eliminar varias</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
+  V(`<div class="ph-row"><div><h1 class="ph">${ico('cards')} Tarjetas de memoria</h1><p class="sub">Repetición espaciada: cada tarjeta vuelve cuando toca repasarla. Las creas aquí o con bloques <code>flashcards</code> en tus resúmenes.</p></div><div class="dh-act"><button class="btn" data-act="card-import">${ico('upload')} Importar archivo</button>${unlinked ? `<button class="btn" data-act="card-link">${ico('link')} Vincular a resumen (${unlinked})</button>` : ''}${studyBtns()}<button class="btn" data-act="card-purge">${ico('trash')} Eliminar varias</button><button class="btn" data-act="card-new">${ico('plus')} Nueva tarjeta</button></div></div>
     <div class="pnl libf">${scopeSelects(F, 'cards')}<label class="sel"><span>Por sesión</span><select data-k="n" data-scope="cards">${optHtml([['10', '10'], ['20', '20'], ['40', '40'], ['80', '80'], ['999', 'Todas']], F.n)}</select></label><label class="sel"><span>Nuevas al día</span><select data-k="newlim" data-scope="cards">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['40', '40'], ['100', '100'], ['9999', 'Sin límite']], newLimit())}</select></label></div>
     <div class="kps three"><div class="kp static"><span class="kp-t"><small>Total</small><b>${pool.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Pendientes hoy</small><b>${due.length}</b></span></div><div class="kp static"><span class="kp-t"><small>Dominadas (≥21 d)</small><b>${pool.filter(c => (m[c.id] || {}).iv >= 21).length}</b></span></div></div>
     <div class="dh-act"><button class="btn pri" data-act="cards-start" ${due.length ? '' : 'disabled'}>${ico('play')} Estudiar ahora (${due.length})</button><button class="btn" data-act="cards-start" data-all="1" ${pool.length ? '' : 'disabled'}>${ico('repeat')} Repasar todas (${pool.length})</button></div>
@@ -2021,7 +2038,7 @@ ACT['card-del'] = el => confirmModal('¿Eliminar esta tarjeta?', () => { store.s
 ACT['cards-start'] = el => {
   const pool = cardPool(), list = el.dataset.all === '1' ? pool : dueCards(pool);
   if (!list.length) return toast('No hay tarjetas para estudiar');
-  const n = +UI.cardsf.n || 20; startSession(shuffle(list).slice(0, n >= 999 ? list.length : n));
+  const n = +UI.cardsf.n || 20; startSession(mixIf(shuffle(list).slice(0, n >= 999 ? list.length : n)));
 };
 function startSession(cards) { SESS = { q: [...cards], total: cards.length, done: 0, show: false, r: [0, 0, 0, 0], t0: Date.now() }; S.view = 'session'; applyAuto(); S.cur = null; renderSession(); renderSide(); }
 function endSession() { if (SESS && SESS.done > 0) log('cards', null, { n: SESS.done }); SESS = null; }
@@ -2029,8 +2046,8 @@ function renderSession() {
   const s = SESS; if (!s) return;
   const c = s.q[0]; if (!c) return finishSession();
   const d = c.path && S.byPath.get(c.path), pct = Math.round(s.done / s.total * 100);
-  V(`<div class="sess"><div class="sess-h"><button class="btn sm" data-act="sess-end">${ico('x')} Salir</button>${s.undo ? `<button class="btn sm" data-act="sess-undo" title="Deshacer (Z)">${ico('repeat')} Deshacer</button>` : ''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span>${s.done}/${s.total}</span></div>
-    <div class="flash-c">${c.sec ? `<div class="fsec">${esc(c.sec)}</div>` : ''}<div class="fq">${renderInline(c.q)}</div>${s.show ? `<hr><div class="fa">${renderInline(c.a).replace(/\n/g, '<br>')}</div>` : ''}${d ? `<a class="src" href="${href(d.path)}">${esc(d.title)}</a>` : ''}</div>
+  V(`<div class="sess"><div class="sess-h"><button class="btn sm" data-act="sess-end">${ico('x')} Salir</button>${s.undo ? `<button class="btn sm" data-act="sess-undo" title="Deshacer (Z)">${ico('repeat')} Deshacer</button>` : ''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span>${s.done}/${s.total}</span><button class="btn sm" data-act="sess-snooze" title="Posponer hasta mañana">Posponer</button><button class="btn sm" data-act="sess-susp" title="No volver a mostrarla">Suspender</button></div>
+    <div class="flash-c">${c.sec ? `<div class="fsec">${esc(c.sec)}</div>` : ''}<div class="fq">${renderInline(c.q)}</div>${recallBox(s)}${s.show ? `<hr><div class="fa">${renderInline(c.a).replace(/\n/g, '<br>')}</div>` : ''}${d ? `<a class="src" href="${href(d.path)}">${esc(d.title)}</a>` : ''}</div>
     ${s.show ? `<div class="rate">${['Otra vez', 'Difícil', 'Bien', 'Fácil'].map((l, i) => `<button data-act="rate" data-r="${i}" class="r${i}">${l}<em>${ivLabel(c, i)}</em><small>${i + 1}</small></button>`).join('')}</div>` : `<div class="rate one"><button class="btn pri lg" data-act="sess-show">Mostrar respuesta <small>Espacio</small></button></div>`}</div>`, 'sessv');
 }
 function finishSession() {
@@ -2041,12 +2058,12 @@ function finishSession() {
     <div class="dh-act c"><a class="btn pri" href="${toolUrl('tarjetas')}">Volver a tarjetas</a><a class="btn" href="${toolUrl('estadisticas')}">Ver estadísticas</a></div></div>`);
   renderSide();
 }
-ACT['sess-show'] = () => { if (!SESS) return; SESS.show = true; S.noAnim = true; renderSession(); S.noAnim = false; };
+ACT['sess-show'] = () => { if (!SESS) return; const rc = $('#recall'); SESS.typed = rc ? rc.value.trim() : ''; SESS.show = true; S.noAnim = true; renderSession(); S.noAnim = false; };
 ACT.rate = el => {
   const s = SESS; if (!s || !s.show) return;
   const r = +el.dataset.r, c = s.q.shift(), prev = srsMap()[c.id]; s.undo = { c, r, prev: prev ? { ...prev } : null, pos: -1 }; schedule(c, r); s.r[r]++;
   if (r === 0) { s.undo.pos = Math.min(3, s.q.length); s.q.splice(s.undo.pos, 0, c); } else s.done++;
-  s.show = false; S.noAnim = true; renderSession(); S.noAnim = false;
+  s.show = false; s.typed = ''; S.noAnim = true; renderSession(); S.noAnim = false;
 };
 ACT['sess-undo'] = () => {
   const s = SESS, u = s && s.undo; if (!u) return;
@@ -2132,7 +2149,7 @@ function quizView(q) {
   const pool = quizPool(F), hist = store.get(K.log, []).filter(e => e.k === 'quiz').slice(-8).reverse();
   V(`<h1 class="ph">${ico('quiz')} Autoevaluación</h1><p class="sub">Cuestionarios con corrección automática. Se generan con los bloques <code>quiz</code> de tus resúmenes y con tus tarjetas de memoria.</p>
     <div class="pnl libf">${scopeSelects(F, 'quiz', true)}<label class="sel"><span>Opciones falsas</span><select data-k="lvl" data-scope="quiz">${optHtml([['easy', 'Fáciles (al azar)'], ['med', 'Parecidas'], ['hard', 'Muy parecidas (difícil)']], F.lvl)}</select></label><label class="sel"><span>Preguntas</span><select data-k="n" data-scope="quiz">${optHtml([['5', '5'], ['10', '10'], ['20', '20'], ['999', 'Todas']], F.n)}</select></label></div>
-    <div class="dh-act"><button class="btn pri" data-act="quiz-start" ${pool.length ? '' : 'disabled'}>${ico('play')} Empezar (${Math.min(pool.length, +F.n)} de ${pool.length} disponibles)</button></div>
+    <div class="dh-act"><button class="btn pri" data-act="quiz-start" ${pool.length ? '' : 'disabled'}>${ico('play')} Empezar (${Math.min(pool.length, +F.n)} de ${pool.length} disponibles)</button><button class="btn" data-act="exam-start" ${pool.length ? '' : 'disabled'} title="Sin feedback hasta el final y con tiempo limitado">Simulacro (${Math.max(5, Math.round(Math.min(pool.length, +F.n) * 1.5))} min)</button></div>
     ${pool.length ? '' : emptyBox('quiz', 'No hay preguntas disponibles.', 'Añade un bloque <code>quiz</code> a un resumen o crea tarjetas (mira la Ayuda).')}
     ${hist.length ? `<h3 class="lh">Últimos resultados</h3><div class="dl">${hist.map(e => `<div class="dr"><span class="dot-b static"><span class="dot ${e.ok / e.n >= 0.7 ? 'dom' : e.ok / e.n >= 0.5 ? 'repasar' : 'pend'}"></span></span><span class="dr-a"><span class="dr-t">${e.ok}/${e.n} · ${Math.round(e.ok / e.n * 100)}%</span><span class="dr-m"><span class="bd">${ago(e.t)}</span></span></span></div>`).join('')}</div>` : ''}`);
 }
@@ -2146,15 +2163,15 @@ function renderQuiz() {
   const z = QZ; if (!z) return;
   if (z.i >= z.qs.length) return finishQuiz();
   const q = z.qs[z.i], pct = Math.round(z.i / z.qs.length * 100);
-  V(`<div class="sess"><div class="sess-h"><button class="btn sm" data-act="quiz-end">${ico('x')} Salir</button><div class="pbar"><i style="width:${pct}%"></i></div><span>${z.i + 1}/${z.qs.length}</span></div>
+  V(`<div class="sess"><div class="sess-h"><button class="btn sm" data-act="quiz-end">${ico('x')} Salir</button><div class="pbar"><i style="width:${pct}%"></i></div><span>${z.i + 1}/${z.qs.length}</span>${z.exam ? '<span class="tmr" id="qtmr"></span>' : ''}</div>
     <div class="flash-c left"><div class="fq">${renderInline(q.q)}</div><div class="qos">${q.opts.map((o, k) => `<button class="qo" data-act="quiz-opt" data-k="${k}">${renderInline(o)}</button>`).join('')}</div><div class="qx" hidden></div></div>
     <div class="rate one"><button class="btn pri lg" data-act="quiz-next" hidden>${z.i + 1 >= z.qs.length ? 'Ver resultado' : 'Siguiente'}</button></div></div>`, 'sessv');
 }
 ACT['quiz-opt'] = el => {
-  const z = QZ; if (!z || z.answered) return; z.answered = true;
+  const z = QZ; if (!z || z.answered) return; if (z.exam) return examPick(el); z.answered = true;
   const q = z.qs[z.i], k = +el.dataset.k, right = q.ok.includes(k);
   $$('.qo').forEach((b, i) => { b.disabled = true; if (q.ok.includes(i)) b.classList.add('ok'); else if (i === k) b.classList.add('bad'); });
-  if (right) z.ok++; else z.wrong.push(q);
+  if (right) z.ok++; else { z.wrong.push(q); addMiss(q); }
   const x = $('.qx'); const txt = q.exp || (q.fromCard ? 'Respuesta: ' + q.opts[q.ok[0]] : '');
   if (txt) { x.innerHTML = renderInline(txt); x.hidden = false; }
   $('[data-act=quiz-next]').hidden = false; $('[data-act=quiz-next]').focus();
@@ -2879,7 +2896,7 @@ function afterRoute() {
   hvHide(); applyAuto(); const b = $('#selbar'); if (b) b.hidden = true;
   if (S.view !== 'doc' && document.body.classList.contains('focus')) { document.body.classList.remove('focus'); const x = $('#focusX'); if (x) x.hidden = true; }
   if (S.fresh && !(document.activeElement && document.activeElement.id === 'q')) { const m = $('#main'); if (m) m.focus({ preventScroll: true }); }
-  pmPaint();
+  pmPaint(); s2After();
 }
 
 /* ---------- Accesibilidad: foco en diálogos ---------- */
@@ -3116,6 +3133,200 @@ ACT['card-purge'] = () => {
     }
   });
 };
+
+/* ============ Mejoras de estudio: hoy, fallos, recuerdo, simulacro, puntos débiles, tiempo, glosario, avisos ============ */
+const flag = (k, d) => !!store.get(k, d);
+const topicKey = c => c.path || ('s:' + c.subj + '|' + topicOf(c));
+const withSrs = (c, fn) => { const m = srsMap(), e = m[c.id] || { ef: 2.5, iv: 0, reps: 0, due: today() }; fn(e); m[c.id] = e; store.set(K.srs, m); };
+
+/* ---- Tarjetas y glosario automáticos a partir de **término**: definición ---- */
+const TERM_A = /^\s*(?:[-*+]\s+)?\*\*([^*\n]{2,70})\*\*\s*[:：–—-]\s+(\S.{9,})$/, TERM_B = /^\s*(?:[-*+]\s+)?\*\*([^*\n]{2,70}?)[:：]\*\*\s*(\S.{9,})$/;
+function buildAuto() {
+  S.gloss = []; S.docCards = (S.docCards || []).filter(c => !c.auto);
+  if (!flag('rv-auto', true)) return;
+  const seen = new Set(S.docCards.map(c => norm(c.q)));
+  for (const d of allDocs()) {
+    if (d.text == null) continue; let fence = false;
+    for (const ln of d.text.split('\n')) {
+      if (/^\s*(```|~~~)/.test(ln)) { fence = !fence; continue; } if (fence) continue;
+      const m = ln.match(TERM_A) || ln.match(TERM_B); if (!m) continue;
+      const term = m[1].trim(), def = m[2].trim().replace(/\s+/g, ' ');
+      S.gloss.push({ term, def, d });
+      const q = 'Define: **' + term + '**'; if (seen.has(norm(q))) continue; seen.add(norm(q));
+      S.docCards.push({ id: 'a:' + hash(d.path + term), q, a: def, subj: d.subj, path: d.path, sec: 'Glosario', auto: true });
+    }
+  }
+}
+document.addEventListener('rv-indexed', () => { buildAuto(); notifyDue(); if (S.view === 'tool:hoy' || S.view === 'tool:glosario') rerender(); });
+ACT['auto-toggle'] = () => { store.set('rv-auto', !flag('rv-auto', true)); buildAuto(); toast(flag('rv-auto', true) ? 'Tarjetas de definiciones activadas' : 'Tarjetas de definiciones desactivadas'); rerender(); renderSide(); };
+
+/* ---- Interleaving ---- */
+function interleave(list) {
+  const by = {}; list.forEach(c => (by[topicKey(c)] = by[topicKey(c)] || []).push(c));
+  const qs = Object.values(by); if (qs.length < 2) return list; const out = [];
+  for (let i = 0; out.length < list.length; i++) for (const q of qs) if (q[i]) out.push(q[i]);
+  return out;
+}
+const mixIf = l => flag('rv-mix', true) ? interleave(l) : l;
+
+/* ---- Modo recuerdo, posponer y suspender ---- */
+const recallBox = s => !flag('rv-recall', false) ? '' : (s.show ? (s.typed ? `<div class="recall-t"><small>Tu respuesta</small>${esc(s.typed).replace(/\n/g, '<br>')}</div>` : '') : `<textarea id="recall" class="inp recall" rows="3" placeholder="Escribe lo que recuerdas antes de verla (Ctrl+Enter para comprobar)"></textarea>`);
+document.addEventListener('keydown', e => { if (e.target && e.target.id === 'recall' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ACT['sess-show'](); } });
+ACT['rec-toggle'] = () => { store.set('rv-recall', !flag('rv-recall', false)); rerender(); };
+ACT['mix-toggle'] = () => { store.set('rv-mix', !flag('rv-mix', true)); rerender(); };
+ACT['sess-snooze'] = () => { const s = SESS; if (!s || !s.q.length) return; const c = s.q.shift(); withSrs(c, e => { e.snooze = addDays(today(), 1); }); s.total--; s.show = false; s.typed = ''; s.undo = null; toast('Pospuesta hasta mañana'); S.noAnim = true; renderSession(); S.noAnim = false; renderSide(); };
+ACT['sess-susp'] = () => { const s = SESS; if (!s || !s.q.length) return; const c = s.q.shift(); withSrs(c, e => { e.susp = true; e.due = '9999-12-31'; }); s.total--; s.show = false; s.typed = ''; s.undo = null; toast('Tarjeta suspendida (se restaura desde Tarjetas)'); S.noAnim = true; renderSession(); S.noAnim = false; renderSide(); };
+ACT['card-unsusp'] = () => {
+  const m = srsMap(); let n = 0;
+  Object.keys(m).forEach(k => { const e = m[k]; if (e && e.susp) { n++; delete e.susp; if (!e.reps && !e.first) delete m[k]; else e.due = today(); } });
+  store.set(K.srs, m); toast(`${n} tarjetas restauradas`); rerender(); renderSide();
+};
+
+/* ---- Mis fallos y puntos débiles ---- */
+function addMiss(q) {
+  const qm = store.get('rv-qmiss', {}), key = q.path || q.subj || '_'; qm[key] = (qm[key] || 0) + 1; store.set('rv-qmiss', qm);
+  if (q.fromCard && q.cid) { withSrs({ id: q.cid }, e => { e.lap = (e.lap || 0) + 1; if (!e.first) e.first = today(); e.reps = 0; e.due = today(); }); return; }
+  if (!flag('rv-missauto', true)) return;
+  const mine = store.get(K.uc, []), a = q.opts[q.ok[0]];
+  if (mine.some(c => norm(c.q) === norm(q.q))) return;
+  mine.push({ id: uid(), q: q.q, a, subj: q.subj || '', path: q.path || '', sec: 'Mis fallos' }); store.set(K.uc, mine);
+}
+const failCards = () => { const m = srsMap(); return allCards().filter(c => { const x = m[c.id]; if (x && x.susp) return false; return c.sec === 'Mis fallos' ? !(x && x.reps >= 4) : !!(x && x.lap > 0 && x.reps < 4); }); };
+ACT['fallos-start'] = () => { const l = failCards(); if (!l.length) return toast('No tienes fallos pendientes'); startSession(mixIf(shuffle(l).slice(0, 30))); };
+function weakStats() {
+  const m = srsMap(), qm = store.get('rv-qmiss', {}), g = {};
+  for (const c of allCards()) {
+    const k = topicKey(c), x = m[c.id], o = g[k] || (g[k] = { key: k, path: c.path || '', subj: c.subj, topic: topicOf(c), n: 0, seen: 0, lap: 0, ef: 0 });
+    o.n++; if (x) { o.seen++; o.lap += x.lap || 0; o.ef += x.ef || 2.5; }
+  }
+  return Object.values(g).map(o => { const ef = o.seen ? o.ef / o.seen : 2.5, q = qm[o.path || o.subj] || 0; return { ...o, ef, q, score: (o.lap / Math.max(1, o.seen)) * 2 + Math.max(0, 2.5 - ef) * 2 + q * .3 }; })
+    .filter(o => (o.seen >= 3 || o.q) && o.score > .15).sort((a, b) => b.score - a.score);
+}
+const weakLabel = o => { const d = o.path && S.byPath.get(o.path); return d ? d.title : (o.topic ? `${o.subj} · ${o.topic}` : o.subj || 'Sin asignatura'); };
+ACT['weak-study'] = el => {
+  const o = weakStats()[+el.dataset.i]; if (!o) return;
+  const l = allCards().filter(c => topicKey(c) === o.key && !(srsMap()[c.id] || {}).susp); if (!l.length) return toast('Sin tarjetas en este apartado');
+  startSession(shuffle(l).slice(0, 25));
+};
+function debilesView() {
+  if (needIdx('debiles', 'Puntos débiles')) return;
+  S.view = 'tool:debiles'; const w = weakStats().slice(0, 12), mx = Math.max(1, ...w.map(o => o.score));
+  V(`<h1 class="ph">${ico('target')} Puntos débiles</h1><p class="sub">Temas donde más fallas (tarjetas marcadas «Otra vez», dificultad acumulada y errores del quiz). Se actualiza solo.</p>
+    ${w.length ? `<div class="dl">${w.map((o, i) => `<div class="dr"><span class="dr-a"><span class="dr-t">${esc(weakLabel(o))}</span><span class="dr-m"><span class="bd">${o.lap} fallos en tarjetas</span><span class="bd">${o.q} fallos en quiz</span><span class="bd">${o.n} tarjetas</span></span><span class="tm-bar"><i style="width:${Math.round(o.score / mx * 100)}%"></i></span></span><button class="btn sm" data-act="weak-study" data-i="${i}">Repasar</button></div>`).join('')}</div>` : emptyBox('target', 'Aún no hay suficientes datos.', 'Estudia unas tarjetas o haz algún quiz y aquí aparecerán tus temas más flojos.')}`);
+}
+
+/* ---- Simulacro de examen ---- */
+function examPick(el) {
+  const z = QZ, q = z.qs[z.i], k = +el.dataset.k;
+  if (q.ok.includes(k)) z.ok++; else { z.wrong.push(q); addMiss(q); }
+  z.i++; S.noAnim = true; renderQuiz(); S.noAnim = false;
+}
+ACT['exam-start'] = () => {
+  ACT['quiz-start'](); if (!QZ) return;
+  QZ.exam = { end: Date.now() + Math.max(5, Math.round(QZ.qs.length * 1.5)) * 6e4 }; renderQuiz();
+};
+function tickExam() {
+  const z = QZ; if (!z || !z.exam) return; const left = z.exam.end - Date.now(), t = $('#qtmr');
+  if (left <= 0) { toast('Tiempo agotado'); z.i = z.qs.length; renderQuiz(); return; }
+  if (t) { const s = Math.ceil(left / 1000); t.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; t.classList.toggle('low', s < 60); }
+}
+{ const _rq = renderQuiz; renderQuiz = function () { _rq(); tickExam(); }; }
+setInterval(tickExam, 1000);
+
+/* ---- Tiempo de estudio por asignatura ---- */
+let lastAct = Date.now();
+['keydown', 'pointerdown', 'scroll', 'wheel'].forEach(ev => addEventListener(ev, () => { lastAct = Date.now(); }, { passive: true, capture: true }));
+function ctxSubj() { if (SESS && SESS.q[0]) return SESS.q[0].subj; if (QZ && QZ.qs[QZ.i]) return QZ.qs[QZ.i].subj; if (S.view === 'doc' && S.cur) return S.cur.subj; return ''; }
+setInterval(() => {
+  if (document.hidden || Date.now() - lastAct > 120000) return; const s = ctxSubj(); if (!s) return;
+  const t = store.get('rv-time', {}), d = today(); t[d] = t[d] || {}; t[d][s] = +((t[d][s] || 0) + 0.5).toFixed(1);
+  Object.keys(t).sort().slice(0, -60).forEach(k => delete t[k]); store.set('rv-time', t);
+}, 30000);
+const fmtMin = m => m >= 60 ? `${Math.floor(m / 60)} h ${Math.round(m % 60)} min` : `${Math.round(m)} min`;
+function timePanel() {
+  const t = store.get('rv-time', {}), tot = {}, d0 = addDays(today(), -6); let all = 0, td = 0;
+  for (const [d, o] of Object.entries(t)) for (const [s, m] of Object.entries(o)) { if (d >= d0) { tot[s] = (tot[s] || 0) + m; all += m; } if (d === today()) td += m; }
+  const rows = Object.entries(tot).sort((a, b) => b[1] - a[1]), mx = rows.length ? rows[0][1] : 1;
+  return `<section class="pnl tm"><h3>Tiempo de estudio · últimos 7 días</h3>${rows.length ? `<p class="muted">Hoy ${fmtMin(td)} · semana ${fmtMin(all)} (solo cuenta cuando estás activo)</p>${rows.map(([s, m]) => `<div class="tm-row"><b>${esc(s)}</b><span class="tm-bar"><i style="width:${Math.round(m / mx * 100)}%"></i></span><span>${fmtMin(m)}</span></div>`).join('')}` : '<p class="muted">Empieza a leer o repasar y aquí verás cuánto dedicas a cada asignatura.</p>'}</section>`;
+}
+{ const _sv = TOOLVIEWS.estadisticas; TOOLVIEWS.estadisticas = function (...a) { _sv(...a); const v = $('#main .view'); if (v) v.insertAdjacentHTML('beforeend', timePanel()); }; }
+
+/* ---- Avisos de repaso ---- */
+const dueCount = () => IDX.ready ? dueCards().length + dueReviews().length : 0;
+function s2After() { const n = dueCount(); if (n && !/^\(\d+\) /.test(document.title)) document.title = `(${n}) ${document.title}`; }
+function notifyDue() {
+  const n = dueCount(); if (!n) return; const d = today();
+  if (store.get('rv-ntf', '') !== d) { store.set('rv-ntf', d); toast(`Tienes ${n} elementos por repasar hoy`, 6000); }
+  if (document.hidden && flag('rv-bell', false) && typeof Notification !== 'undefined' && Notification.permission === 'granted' && Date.now() - store.get('rv-ntft', 0) > 4 * 36e5) {
+    store.set('rv-ntft', Date.now()); try { new Notification(CFG.titulo, { body: `${n} elementos por repasar`, icon: 'icon-192.png' }); } catch {}
+  }
+}
+setInterval(notifyDue, 15 * 60000);
+ACT['bell-toggle'] = async () => {
+  if (flag('rv-bell', false)) { store.set('rv-bell', false); toast('Avisos del navegador desactivados'); return rerender(); }
+  if (typeof Notification === 'undefined') return toast('Tu navegador no admite avisos');
+  const p = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+  if (p === 'granted') { store.set('rv-bell', true); toast('Avisos activados (con la pestaña abierta en segundo plano)'); } else toast('Permiso denegado en el navegador');
+  rerender();
+};
+
+/* ---- Sesión de hoy ---- */
+ACT['today-start'] = () => {
+  const fail = new Set(failCards().map(c => c.id)), due = dueCards(), f = due.filter(c => fail.has(c.id)), r = due.filter(c => !fail.has(c.id));
+  const l = [...shuffle(f), ...mixIf(shuffle(r))].slice(0, 40); if (!l.length) return toast('Nada pendiente hoy');
+  startSession(l);
+};
+function hoyView() {
+  if (needIdx('hoy', 'Sesión de hoy')) return;
+  S.view = 'tool:hoy';
+  const dc = dueCards().length, nf = failCards().length, revs = dueReviews(), tk = openTasks(), ex = nextExam(), w = weakStats().slice(0, 3);
+  const t = store.get('rv-time', {})[today()] || {}, mins = Object.values(t).reduce((a, b) => a + b, 0), goal = flag('rv-bell', false);
+  const line = (n, label, href) => n ? `<a class="dr" href="${href}"><span class="dr-a"><span class="dr-t">${n} ${label}</span></span>${ico('chev')}</a>` : '';
+  V(`<h1 class="ph">${ico('bolt')} Sesión de hoy</h1><p class="sub">Todo lo pendiente en un sitio. Hoy llevas ${fmtMin(mins)} de estudio.</p>
+    <div class="dh-act"><button class="btn pri lg" data-act="today-start" ${dc ? '' : 'disabled'}>${ico('play')} Empezar (${Math.min(40, dc)} tarjetas${nf ? ', fallos primero' : ''})</button>${nf ? `<button class="btn" data-act="fallos-start">${ico('repeat')} Mis fallos (${nf})</button>` : ''}</div>
+    <div class="dl">${line(dc, dc === 1 ? 'tarjeta por repasar' : 'tarjetas por repasar', toolUrl('tarjetas'))}${line(revs.length, revs.length === 1 ? 'repaso programado' : 'repasos programados', toolUrl('calendario'))}${line(tk.length, tk.length === 1 ? 'tarea abierta' : 'tareas abiertas', toolUrl('tareas'))}${ex ? `<a class="dr" href="${toolUrl('examenes')}"><span class="dr-a"><span class="dr-t">Próximo examen: ${esc(ex.name)}</span><span class="dr-m"><span class="bd">${esc(ex.date)}</span></span></span>${ico('chev')}</a>` : ''}</div>
+    ${!dc && !revs.length && !tk.length ? `<p class="muted pad">Todo al día. Buen momento para leer un tema nuevo o hacer un simulacro.</p>` : ''}
+    ${w.length ? `<h3 class="lh">Puntos débiles</h3><div class="dl">${w.map((o, i) => `<div class="dr"><span class="dr-a"><span class="dr-t">${esc(weakLabel(o))}</span></span><button class="btn sm" data-act="weak-study" data-i="${i}">Repasar</button></div>`).join('')}</div><p><a href="${toolUrl('debiles')}">Ver todos</a></p>` : ''}
+    <div class="dh-act"><button class="btn" data-act="bell-toggle" aria-pressed="${goal}">${ico('bell')} Avisos del navegador: ${goal ? 'sí' : 'no'}</button></div>`);
+}
+
+/* ---- Glosario ---- */
+UI.gl = { q: '', subj: '' };
+function glossList() {
+  const F = UI.gl, box = $('#gl'); if (!box) return; const nq = norm(F.q);
+  const list = (S.gloss || []).filter(g => (!F.subj || g.d.subj === F.subj) && (!nq || norm(g.term + ' ' + g.def).includes(nq))).sort((a, b) => a.term.localeCompare(b.term, 'es'));
+  box.innerHTML = `<p class="count">${plural(list.length, 'término', 'términos')}</p>` + (list.length ? `<div class="dl left">${list.slice(0, 200).map(g => `<div class="dr"><span class="dr-a"><span class="dr-t"><b>${esc(g.term)}</b></span><span class="dr-m">${renderInline(g.def)}</span><span class="dr-m"><a class="bd" href="${href(g.d.path)}">${esc(g.d.title)}</a></span></span></div>`).join('')}</div>${list.length > 200 ? '<p class="muted center">Afina la búsqueda para ver el resto.</p>' : ''}` : emptyBox('book', 'Sin términos.', 'Escribe definiciones como <code>**término**: definición</code> en tus resúmenes y se añaden aquí solas.'));
+}
+function glosarioView() {
+  if (needIdx('glosario', 'Glosario')) return; S.view = 'tool:glosario'; const F = UI.gl;
+  V(`<h1 class="ph">${ico('book')} Glosario</h1><p class="sub">Generado automáticamente a partir de las líneas <code>**término**: definición</code> de tus resúmenes. Cada una es también una tarjeta de memoria.</p>
+    <div class="pnl libf"><label class="sel grow"><span>Buscar</span><input type="search" class="inp" data-g="q" value="${esc(F.q)}" placeholder="Término o definición"></label><label class="sel"><span>Asignatura</span><select data-g="subj">${optHtml(subjOptions(), F.subj)}</select></label>
+    <button class="btn" data-act="auto-toggle">Tarjetas automáticas: ${flag('rv-auto', true) ? 'sí' : 'no'}</button></div><div id="gl"></div>`);
+  glossList();
+}
+document.addEventListener('input', e => { const g = e.target.dataset && e.target.dataset.g; if (g && S.view === 'tool:glosario') { UI.gl[g] = e.target.value; glossList(); } });
+document.addEventListener('change', e => { const g = e.target.dataset && e.target.dataset.g; if (g === 'subj' && S.view === 'tool:glosario') { UI.gl.subj = e.target.value; glossList(); } });
+
+/* ---- Botones de estudio en Tarjetas ---- */
+function studyBtns() {
+  const nf = IDX.ready ? failCards().length : 0, ns = Object.values(srsMap()).filter(x => x && x.susp).length;
+  return `<button class="btn" data-act="rec-toggle" aria-pressed="${flag('rv-recall', false)}" title="Escribe tu respuesta antes de verla">Recuerdo: ${flag('rv-recall', false) ? 'sí' : 'no'}</button><button class="btn" data-act="mix-toggle" aria-pressed="${flag('rv-mix', true)}" title="Alterna temas en cada sesión">Mezclado: ${flag('rv-mix', true) ? 'sí' : 'no'}</button>${nf ? `<button class="btn" data-act="fallos-start">${ico('repeat')} Mis fallos (${nf})</button>` : ''}${ns ? `<button class="btn" data-act="card-unsusp">Restaurar suspendidas (${ns})</button>` : ''}`;
+}
+
+/* ---- Chuleta de fórmulas (PDF) ---- */
+ACT['cheat-pdf'] = async () => {
+  const F = UI.form, nq = norm(F.q), tq = F.q ? normTex(F.q) : '';
+  let list = allDocs().flatMap(d => d.forms.map(x => ({ ...x, f: d }))).filter(x => (!F.subj || x.f.subj === F.subj) && (!F.meta || x.kind === 'block'));
+  if (F.q) list = list.filter(x => norm(`${x.name} ${x.head} ${x.f.title}`).includes(nq) || (tq.length > 1 && normTex(x.tex).includes(tq)));
+  if (!list.length) return toast('No hay fórmulas con este filtro');
+  let area = $('#printArea'); if (area) area.remove(); area = document.createElement('div'); area.id = 'printArea'; document.body.append(area);
+  area.innerHTML = `<section class="pd cheat"><div class="pd-k">Chuleta de fórmulas${F.subj ? ' · ' + esc(F.subj) : ''} · ${list.length}</div><div class="ch-g">${list.map(x => `<div class="ch-i"><b>${esc(x.name || x.head || x.f.title)}</b><div>${kx(x.tex, true)}</div>${x.vars.length ? `<small>${x.vars.slice(0, 8).map(v => `${kx(v.sym, false)}: ${esc(v.desc)}${v.unit ? ' (' + esc(v.unit) + ')' : ''}`).join(' · ')}</small>` : ''}</div>`).join('')}</div></section>`;
+  await new Promise(r => setTimeout(r, 400));
+  const done = () => { document.body.classList.remove('printing'); area.remove(); removeEventListener('afterprint', done); };
+  addEventListener('afterprint', done); document.body.classList.add('printing'); window.print();
+};
+{ const _fv = TOOLVIEWS.formulas; TOOLVIEWS.formulas = function (...a) { _fv(...a); const h = $('#main .ph'); if (h && !$('[data-act=cheat-pdf]')) h.insertAdjacentHTML('afterend', `<p><button class="btn" data-act="cheat-pdf">${ico('print')} Chuleta en PDF (con el filtro actual)</button></p>`); }; }
+Object.assign(TOOLVIEWS, { hoy: hoyView, debiles: debilesView, glosario: glosarioView });
 
 </script>
 </body>
