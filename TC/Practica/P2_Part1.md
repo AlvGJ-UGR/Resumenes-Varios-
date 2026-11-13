@@ -342,6 +342,8 @@ title("Señal representada")
 
 📄 **[Figura 1 — `grafica_senal_concatenada.png`]** Título: *Señal representada*. Representación del vector concatenado $S$; eje horizontal = índice de muestra.
 
+![Figura 1 — Señal representada (S frente al índice de muestra)](grafica_senal_concatenada.png)
+
 ```matlab
 figure;
 plot([1:length(S)]/frequency, S)
@@ -349,6 +351,10 @@ title("Señal representada en el dominio del tiempo")
 ```
 
 📄 **[Figura 2 — `grafica_senal_real.png`]** Título: *Señal representada en el dominio del tiempo*. Representación de $S$ frente al tiempo.
+
+![Figura 2 — S en el dominio del tiempo (archivo grafica_senal_real.png, ver D7)](grafica_senal_real.png)
+
+> ⚠️ **Aviso sobre D7 y el repositorio:** al existir un único archivo `grafica_senal_real.png`, la misma imagen aparece aquí (Figura 2) y en la Figura 5. Solo una de las dos coincide con lo que dice su título: si la imagen del repositorio es la de `realSignal`, esta Figura 2 (que debería ser $S$, la señal concatenada de entrenamiento) no estará mostrando su contenido real, y viceversa. Para resolverlo basta con subir una imagen con otro nombre (p. ej. `grafica_senal_concatenada_tiempo.png`) y cambiar la ruta de esta figura.
 
 **Explicación.** `length(S)` es $N$; `[1:length(S)]` genera los índices $n$; dividir entre `frequency` da $t_n=n/f_s$ en segundos. La forma de la curva es la misma que en la Figura 1; solo cambia la escala del eje horizontal (muestras → segundos).
 
@@ -468,6 +474,8 @@ title('pmf de la señal concatenada de audio')
 ```
 
 📄 **[Figura 3 — `grafica_pmf.png`]** Título: *pmf de la señal concatenada de audio*. Representa `probabilityMatrix`; eje horizontal = valores posibles de $S$ entre −128 y 127.
+
+![Figura 3 — PMF de la señal concatenada de audio](grafica_pmf.png)
 
 **Explicación.** Se dibuja la probabilidad de cada valor. 🧑‍🏫 Dado que la moda tiene probabilidad 0.4225 (C.9), cabe esperar un **pico muy marcado alrededor de 0** y colas que decaen rápidamente hacia ±128 (típico de la voz: mucha energía baja y pocos picos grandes).
 
@@ -624,6 +632,8 @@ title("Señal real representada en el dominio del tiempo")
 
 📄 **[Figura 5 — `grafica_senal_real.png`]** (ver D7: mismo identificador que la Figura 2). Señal `realSignal` frente al tiempo.
 
+![Figura 5 — realSignal en el dominio del tiempo (archivo grafica_senal_real.png, ver D7)](grafica_senal_real.png)
+
 ```matlab
 figure;
 plot([1:length(lossySignal)]/frequency, lossySignal)
@@ -631,6 +641,8 @@ title("Señal alterada representada en el dominio del tiempo")
 ```
 
 📄 **[Figura 6 — `grafica_senal_alterada.png`]** Señal `lossySignal` tras simular las pérdidas.
+
+![Figura 6 — Señal alterada en el dominio del tiempo](grafica_senal_alterada.png)
 
 **Qué aporta.** Permite comparar visualmente la señal original con la dañada. 🧑‍🏫 Como solo el 10 % de las muestras cambia y el valor de relleno (1–10) es pequeño frente a la amplitud de la voz, cabe esperar que a simple vista ambas gráficas se parezcan mucho, con pequeñas "marcas" en las zonas donde la señal real tenía amplitud grande. Aun así, **no tengo la imagen** y no puedo confirmarlo.
 
@@ -672,6 +684,8 @@ title("Señal reconstruída usando el método de la MODA")
 
 📄 **[Figura 7 — `grafica_reconstruida_moda.png`]** Señal `trend_reconstructedSignal`.
 
+![Figura 7 — Señal reconstruida con el método de la MODA](grafica_reconstruida_moda.png)
+
 ```matlab
 figure;
 plot([1:length(weightProbability_reconstructedSignal)]/frequency,
@@ -680,6 +694,12 @@ title("Señal reconstruída usando el método de la PROBABILIDAD PONDERADA")
 ```
 
 📄 **[Figura 8 — `grafica_reconstruida_probabilidad_ponderada_1.png`]** Señal `weightProbability_reconstructedSignal`.
+
+![Figura 8 — Señal reconstruida con PROBABILIDAD PONDERADA (versión _1)](grafica_reconstruida_probabilidad_ponderada_1.png)
+
+**[Figura 9 — `grafica_reconstruida_probabilidad_ponderada_2.png`]** ⚠️ Esta imagen **no tiene marcador en el documento original** (solo existe `_1`); me la has indicado tú como parte de las gráficas subidas. No sé qué muestra exactamente ni en qué se diferencia de la Figura 8 (podría ser una variante, un zoom u otra versión de la misma reconstrucción), y no lo voy a suponer. Se incluye aquí para que sea visible; si me dices qué representa, la describo en la guía.
+
+![Figura 9 — Señal reconstruida con PROBABILIDAD PONDERADA (versión _2, sin marcador en el original)](grafica_reconstruida_probabilidad_ponderada_2.png)
 
 **Qué aporta.** Visualizar cómo queda la señal tras "rellenar" los huecos. 🧑‍🏫 Como ambos valores de relleno ($-1$ y $-0.0019$) están muy cerca de 0, las Figuras 7 y 8 serán prácticamente indistinguibles a simple vista (se diferencian en ≈1 unidad en una escala de ±128).
 
@@ -764,6 +784,7 @@ SNR2 =
 | 6 | `grafica_senal_alterada.png` | `lossySignal` (tras pérdidas). |
 | 7 | `grafica_reconstruida_moda.png` | Reconstrucción por moda. |
 | 8 | `grafica_reconstruida_probabilidad_ponderada_1.png` | Reconstrucción por prob. ponderada. |
+| 9 | `grafica_reconstruida_probabilidad_ponderada_2.png` | No figura en el original; contenido no verificado (ver C.16). |
 
 *(La numeración de figuras es mía, para referenciarlas; el original no las numera.)*
 
@@ -903,8 +924,9 @@ $$
 | 6 | `grafica_senal_alterada.png` | C.14 | |
 | 7 | `grafica_reconstruida_moda.png` | C.16 | |
 | 8 | `grafica_reconstruida_probabilidad_ponderada_1.png` | C.16 | sufijo `_1` en el nombre |
+| 9 | `grafica_reconstruida_probabilidad_ponderada_2.png` | C.16 | ⚠️ sin marcador en el original; añadida a petición del usuario |
 
-(No hay Figura 4: la numeración 1–3, 5–8 es solo mía y deja ese hueco por claridad con respecto a la sección de evaluación; el original contiene exactamente 7 marcadores gráficos.)
+(No hay Figura 4: la numeración 1–3, 5–8 es solo mía y deja ese hueco por claridad con respecto a la sección de evaluación; el original contiene exactamente 7 marcadores gráficos, más la imagen `_2` que se ha añadido como Figura 9.)
 
 ## Anexo B. Versión propuesta de las partes con discrepancias (NO es el código original)
 
