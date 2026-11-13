@@ -16,7 +16,7 @@
 | ID | Dónde | Resumen | Efecto |
 |---|---|---|---|
 | **I1** | Evaluación | Las gráficas y el bucle usan `realSignal2` / `lossySignal2`, pero las copias (`= lossySignal`) y la SNR usan `realSignal` / `lossySignal`. | No se puede garantizar que se comparen las mismas señales. |
-| **I2** | Matriz de transición | `quasicero` se aplica a la matriz de **conteos**, no a las probabilidades. Las filas de estados nunca observados se vuelven **uniformes** ($1/256\approx0.0039$). | Para esos estados, la moda devuelve $-128$ y la ponderada $-0.5$ (ver §3.4). |
+| **I2** | Matriz de transición | `quasicero` se aplica a la matriz de **conteos**, no a las probabilidades. Las filas de estados nunca observados se vuelven **uniformes** ($1/256\approx0.0039$). | Para esos estados, la moda devuelve $-128$ y la ponderada $-0.5$ (ver §3.5 y §3.6). |
 | **I3** | Prob. ponderada | La fórmula original aparece **solo como imagen** (`figura_02_...png`); no hay transcripción textual. | Se usa la expresión que implementa el código. |
 | **I4** | Interpretación SNR | El texto dice "aproximadamente 30 veces más fuerte". Con los valores dados: ≈34.8 y ≈38.5 (potencia). | Orden de magnitud correcto, cifra imprecisa. |
 | **I5** | Matriz de transición | El texto dice que "obtenemos la matriz de probabilidades de transición" y el bucle genera primero **conteos** (`TransitionMatrix`); las probabilidades llegan después. | Solo confusión de nombres. |
@@ -75,7 +75,7 @@ El pasado ($X_{n-1},\dots,X_0$) **no aporta nada** una vez conocido $X_n$.
 ### 2.2. Estados y transiciones
 📄 Dos ideas: los **estados** (situaciones posibles del sistema) y las **transiciones** (cambios de un estado a otro). Las probabilidades se asignan a las transiciones.
 
-**En la práctica:** el estado es el **valor de una muestra**, un entero de $\{-128,\dots,127\}$ ⇒ **256 estados**. Una transición es el paso de una muestra a la siguiente.
+**En la práctica:** el estado es el **valor de una muestra**, un entero del conjunto $\lbrace -128,\dots,127\rbrace$ ⇒ **256 estados**. Una transición es el paso de una muestra a la siguiente.
 
 📄 Como los datos son discretos, el proceso de Markov se llama **cadena de Markov**.
 
@@ -148,7 +148,7 @@ $$
 
 - $x[n]$: señal enviada (real); $r_k[n]$: reconstrucción $k$; $N$: nº total de muestras.
 
-🧑‍🏫 Como el error solo existe en las posiciones perdidas $\mathcal L=\{1,11,21,\dots\}$, el denominador es $\sum_{n\in\mathcal L}(x[n]-r_k[n])^2$. Y $10^{\mathrm{SNR}/10}$ es una relación de **potencias** (no de amplitudes).
+🧑‍🏫 Como el error solo existe en las posiciones perdidas $\mathcal L=\lbrace 1,11,21,\dots\rbrace$, el denominador es $\sum_{n\in\mathcal L}(x[n]-r_k[n])^2$. Y $10^{\mathrm{SNR}/10}$ es una relación de **potencias** (no de amplitudes).
 
 ---
 
@@ -232,7 +232,7 @@ TransitionMatrix = 256×256
 - Cada pasada suma 1 a la celda $(S(i)+129,\,S(i+1)+129)$.
 - La última línea sustituye por `quasicero` ($10^{-15}$) todas las celdas con conteo 0.
 
-**Lectura de la salida (📄 + 🧑‍🏫).** El factor `10^4 ×` indica que la matriz se muestra dividida por $10^4$, y por eso las celdas visibles aparecen como `0.0000`: son entradas con conteos pequeños (o de valor `quasicero`) frente a $10^4$. Solo se ve una esquina de la matriz (In8).
+**Lectura de la salida (📄 + 🧑‍🏫).** El encabezado `10^4 ×` significa que los valores mostrados hay que multiplicarlos por $10^4$ para obtener los reales (la escala común indica que hay conteos del orden de $10^4$). Con 4 decimales, `0.0000` equivale a un valor real menor que $0.5$. Como un conteo entero $\ge1$ se mostraría como $\ge0.0001$, las celdas visibles que aparecen como `0.0000` son las que valen `quasicero` (transiciones que no ocurren en los datos). Solo se ve una esquina de la matriz (In8).
 
 🧑‍🏫 **Observaciones.**
 - La matriz `TransitionMatrix` contiene **conteos**, no probabilidades (In5).
@@ -301,7 +301,7 @@ imagesc(TransitionProbabilityMatrix)
 colorbar
 ```
 
-![Figura 1 — Matriz de probabilidad de transición](practica_md_assets/figura_01_matriz_probabilidades_transicion.png)
+![Figura 1 — Matriz de probabilidad de transición](figura_01_matriz_probabilidades_transicion.png)
 
 **Cómo leer la figura (🧑‍🏫, deducido del código).**
 - `imagesc` pinta cada elemento con un color según su valor; `colorbar` muestra la escala.
@@ -365,7 +365,7 @@ end
 
 📄 La muestra que se estima viene dada por una probabilidad ponderada (fórmula del original, en imagen):
 
-![Fórmula — Probabilidad ponderada](practica_md_assets/figura_02_formula_probabilidad_ponderada.png)
+![Fórmula — Probabilidad ponderada](figura_02_formula_probabilidad_ponderada.png)
 
 ⚠️ **I3.** La fórmula original aparece solo como imagen. La expresión que implementa el código, y que se corresponde con la esperanza condicionada (§2.7), es:
 
@@ -422,7 +422,7 @@ plot([1:length(realSignal2)]/frequency, realSignal2)
 title("Señal real representada en el dominio del tiempo")
 ```
 
-![Figura 2 — Señal real representada en el dominio del tiempo](practica_md_assets/figura_03_senal_real_dominio_tiempo.png)
+![Figura 2 — Señal real representada en el dominio del tiempo](figura_03_senal_real_dominio_tiempo.png)
 
 ```matlab
 figure;
@@ -430,7 +430,7 @@ plot([1:length(lossySignal2)]/frequency, lossySignal2)
 title("Señal alterada representada en el dominio del tiempo")
 ```
 
-![Figura 3 — Señal alterada representada en el dominio del tiempo](practica_md_assets/figura_04_senal_alterada_dominio_tiempo.png)
+![Figura 3 — Señal alterada representada en el dominio del tiempo](figura_04_senal_alterada_dominio_tiempo.png)
 
 **Explicación.**
 - `[1:length(x)]/frequency`: eje temporal en segundos ($t_n=n/f_s$).
@@ -489,7 +489,7 @@ plot([1:length(trend_reconstructedSignal_Markov)]/frequency, trend_reconstructed
 title("Señal reconstruída usando el método de la MODA")
 ```
 
-![Figura 4 — Señal reconstruida usando el método de la moda](practica_md_assets/figura_05_reconstruccion_metodo_moda.png)
+![Figura 4 — Señal reconstruida usando el método de la moda](figura_05_reconstruccion_metodo_moda.png)
 
 ```matlab
 figure;
@@ -497,7 +497,7 @@ plot([1:length(weightProbability_reconstructedSignal_Markov)]/frequency, weightP
 title("Señal reconstruída usando el método de la PROBABILIDAD PONDERADA")
 ```
 
-![Figura 5 — Señal reconstruida usando el método de la probabilidad ponderada](practica_md_assets/figura_06_reconstruccion_probabilidad_ponderada.png)
+![Figura 5 — Señal reconstruida usando el método de la probabilidad ponderada](figura_06_reconstruccion_probabilidad_ponderada.png)
 
 **Qué aportan.** Permiten comparar visualmente las reconstrucciones con la señal real (Figura 2) y con la alterada (Figura 3).
 
@@ -514,7 +514,7 @@ title("Señal reconstruída usando el método de la PROBABILIDAD PONDERADA")
 
 📄 La SNR viene dada por la siguiente expresión:
 
-![Fórmula — SNR](practica_md_assets/figura_07_formula_snr.png)
+![Fórmula — SNR](figura_07_formula_snr.png)
 
 $$
 \mathrm{SNR}_k(\mathrm{dB})=10\log_{10}\frac{\displaystyle\sum_{n=1}^{N}x[n]^2}{\displaystyle\sum_{n=1}^{N}(x[n]-r_k[n])^2}
@@ -659,7 +659,7 @@ $$
 
 $$
 \mathrm{SNR}_k=10\log_{10}\frac{\sum_n x[n]^2}{\sum_n\big(x[n]-r_k[n]\big)^2}\qquad
-E[(X-c)^2\mid k]=\mathrm{Var}(X\mid k)+(\mu_k-c)^2
+E\big[(X_n-c)^2\mid X_{n-1}=m_k\big]=\mathrm{Var}(X_n\mid X_{n-1}=m_k)+(\mu_k-c)^2
 $$
 
 ### 6.3. Variables y parámetros
@@ -743,8 +743,8 @@ $$
 | Anterior | Moda | Media ponderada |
 |---|---|---|
 | $-1$ | 0 | $0$ |
-| $0$ | 0 | $(-1)\tfrac16+0\cdot\tfrac12+1\cdot\tfrac13=\tfrac16\approx0.167$ |
-| $1$ | empate $0$/$1$ ⇒ `max` elige el primero ⇒ **0** | $0\cdot\tfrac12+1\cdot\tfrac12=0.5$ |
+| $0$ | 0 | $(-1)\cdot\frac{1}{6}+0\cdot\frac{1}{2}+1\cdot\frac{1}{3}=\frac{1}{6}\approx0.167$ |
+| $1$ | empate $0$/$1$ ⇒ `max` elige el primero ⇒ **0** | $0\cdot\frac{1}{2}+1\cdot\frac{1}{2}=0.5$ |
 
 **Paso 5 — Reconstrucción:** si la muestra perdida va tras un $0$, la moda la rellena con 0 y la ponderada con $0.167$; tras un $1$, con 0 y 0.5, respectivamente. Se ve cómo el relleno **depende del contexto**, a diferencia del modelo 1.
 
@@ -754,10 +754,10 @@ $$
 
 | Aparición | Ruta |
 |---|---|
-| §3.4 Figura 1 | `practica_md_assets/figura_01_matriz_probabilidades_transicion.png` |
-| §3.6 Fórmula prob. ponderada | `practica_md_assets/figura_02_formula_probabilidad_ponderada.png` |
-| §3.7 Figura 2 | `practica_md_assets/figura_03_senal_real_dominio_tiempo.png` |
-| §3.7 Figura 3 | `practica_md_assets/figura_04_senal_alterada_dominio_tiempo.png` |
-| §3.9 Figura 4 | `practica_md_assets/figura_05_reconstruccion_metodo_moda.png` |
-| §3.9 Figura 5 | `practica_md_assets/figura_06_reconstruccion_probabilidad_ponderada.png` |
-| §3.10 Fórmula SNR | `practica_md_assets/figura_07_formula_snr.png` |
+| §3.4 Figura 1 | `figura_01_matriz_probabilidades_transicion.png` |
+| §3.6 Fórmula prob. ponderada | `figura_02_formula_probabilidad_ponderada.png` |
+| §3.7 Figura 2 | `figura_03_senal_real_dominio_tiempo.png` |
+| §3.7 Figura 3 | `figura_04_senal_alterada_dominio_tiempo.png` |
+| §3.9 Figura 4 | `figura_05_reconstruccion_metodo_moda.png` |
+| §3.9 Figura 5 | `figura_06_reconstruccion_probabilidad_ponderada.png` |
+| §3.10 Fórmula SNR | `figura_07_formula_snr.png` |
