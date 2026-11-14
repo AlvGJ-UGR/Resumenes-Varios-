@@ -21,6 +21,12 @@ Ondas planas y ecuaciones de Maxwell. Cada fórmula lleva una explicación breve
 11. [Prácticas de laboratorio](#11-prácticas-de-laboratorio)
 12. [Matemáticas de apoyo](#12-matemáticas-de-apoyo)
 13. [⚪ Fuera del parcial](#13--fuera-del-parcial)
+14. [Parámetros y modelo de la línea](#14-parámetros-y-modelo-de-la-línea-t31-y-t32)
+15. [Línea sin pérdidas](#15-línea-sin-pérdidas-t33)
+16. [Línea con pérdidas](#16-línea-con-pérdidas-t34)
+17. [Ondas estacionarias y reflexión sobre una carga](#17-ondas-estacionarias-y-reflexión-sobre-una-carga-t35-y-t36)
+18. [Adaptación y carta de Smith](#18-adaptación-y-carta-de-smith-t37-y-t38)
+19. [Pulsos en la línea](#19-pulsos-en-la-línea-t39)
 
 ---
 
@@ -286,3 +292,141 @@ Ondas planas y ecuaciones de Maxwell. Cada fórmula lleva una explicación breve
 ## 13. ⚪ Fuera del parcial
 
 No entran en el próximo parcial: ⚪ efecto Doppler, ⚪ ondas planas con incidencia oblicua (Snell, ángulo crítico), ⚪ ángulo de Brewster y ⚪ polarización paralela (TM). No hay fórmulas suyas en este formulario.
+
+---
+
+# Tema 3: Líneas de transmisión
+
+> Convenios: carga en $z=0$, generador en $z=-l$, $d=-z$ (distancia a la carga hacia el generador), fasores de pico con $e^{j\omega t}$. Línea sin pérdidas salvo que se indique.
+
+## 14. Parámetros y modelo de la línea (T3.1 y T3.2)
+
+| Fórmula | Explicación |
+|---|---|
+| $V=-\int_1^2\mathbf{E}\cdot d\mathbf{l},\ \ I=\oint_C\mathbf{H}\cdot d\mathbf{l}$ | Tensión e intensidad de un modo TEM (se pueden definir de forma única). |
+| $l<\lambda/10$ | Regla práctica: por debajo basta un circuito de parámetros concentrados; por encima hay que usar el modelo de línea. |
+| $LC=\mu\varepsilon,\ \ G/C=\sigma/\varepsilon$ | Relaciones de una línea con dieléctrico homogéneo: la geometría fija los cuatro parámetros. |
+| $R_s=\sqrt{\pi f\mu_c/\sigma_c}=1/(\sigma_c\delta_s)$ | Resistencia superficial del conductor (efecto pelicular). |
+| Coaxial: $C=\dfrac{2\pi\varepsilon}{\ln(b/a)},\ L=\dfrac{\mu}{2\pi}\ln\dfrac ba,\ G=\dfrac{2\pi\sigma}{\ln(b/a)},\ R=\dfrac{R_s}{2\pi}\left(\dfrac1a+\dfrac1b\right)$ | Parámetros por unidad de longitud de un cable coaxial (radios $a<b$). |
+| Coaxial: $Z_0=\dfrac{\eta}{2\pi}\ln\dfrac ba=\dfrac{60}{\sqrt{\varepsilon_r}}\ln\dfrac ba$ | Impedancia característica del coaxial. |
+| Bifilar: $C=\dfrac{\pi\varepsilon}{\cosh^{-1}(D/2a)},\ L=\dfrac\mu\pi\cosh^{-1}\dfrac D{2a},\ G=\dfrac{\pi\sigma}{\cosh^{-1}(D/2a)},\ R=\dfrac{R_s}{\pi a}$ | Línea de dos hilos de radio $a$ y separación $D$. |
+| Bifilar: $Z_0=\dfrac\eta\pi\cosh^{-1}\dfrac D{2a}\approx\dfrac{120}{\sqrt{\varepsilon_r}}\ln\dfrac Da\ (D\gg a)$ | Impedancia característica del bifilar. |
+| Placas paralelas: $C=\dfrac{\varepsilon w}h,\ L=\dfrac{\mu h}w,\ G=\dfrac{\sigma w}h,\ R=\dfrac{2R_s}w,\ Z_0=\eta\dfrac hw$ | Ancho $w$ y separación $h\ll w$. |
+| $\dfrac{\partial v}{\partial z}=-Ri-L\dfrac{\partial i}{\partial t},\ \ \dfrac{\partial i}{\partial z}=-Gv-C\dfrac{\partial v}{\partial t}$ | Ecuaciones del telegrafista en el dominio del tiempo (Kirchhoff en una célula $\Delta z$). |
+| $\dfrac{dV}{dz}=-ZI,\ \ \dfrac{dI}{dz}=-YV$ con $Z=R+j\omega L,\ Y=G+j\omega C$ | Telegrafista en régimen armónico ($Z$ e $Y$ por unidad de longitud). |
+| $\dfrac{d^2V}{dz^2}=\gamma^2V,\ \ \dfrac{d^2I}{dz^2}=\gamma^2I$ | Ecuación de ondas de la línea. |
+| $\gamma=\sqrt{(R+j\omega L)(G+j\omega C)}=\alpha+j\beta$ | Constante de propagación. |
+| $V(z)=V_0^+e^{-\gamma z}+V_0^-e^{\gamma z}$ | Solución: onda incidente ($+z$) más reflejada ($-z$). |
+| $I(z)=\dfrac{V_0^+e^{-\gamma z}-V_0^-e^{\gamma z}}{Z_0}$ | Corriente asociada (la reflejada lleva signo $-$). |
+| $Z_0=\dfrac Z\gamma=\sqrt{\dfrac{R+j\omega L}{G+j\omega C}}$ | Impedancia característica: cociente $V/I$ de la onda incidente. |
+| Analogía: $E\leftrightarrow V,\ H\leftrightarrow I,\ \mu\leftrightarrow L,\ \varepsilon\leftrightarrow C,\ \sigma\leftrightarrow G,\ \eta\leftrightarrow Z_0$ | Permite trasladar lo visto de ondas planas a la línea. |
+
+## 15. Línea sin pérdidas (T3.3)
+
+| Fórmula | Explicación |
+|---|---|
+| $R=G=0\Rightarrow\gamma=j\beta,\ \ \beta=\omega\sqrt{LC},\ \alpha=0$ | Línea sin pérdidas. |
+| $V(z)=V_0^+e^{-j\beta z}+V_0^-e^{j\beta z},\ \ I(z)=\dfrac{V_0^+e^{-j\beta z}-V_0^-e^{j\beta z}}{Z_0}$ | Tensión y corriente fasoriales; $V_0^\pm$ referidas a la carga. |
+| $V^+/I^+=Z_0,\ \ V^-/I^-=-Z_0$ | Cociente $V/I$ de cada onda viajera. |
+| $v(z,t)=\lvert V_0^+\rvert\cos(\omega t-\beta z+\varphi^+)+\lvert V_0^-\rvert\cos(\omega t+\beta z+\varphi^-)$ | Tensión instantánea. |
+| $V(d)=V_0^+e^{j\beta d}+V_0^-e^{-j\beta d}$ | Tensión en función de la distancia a la carga. |
+| $\dfrac{\partial^2v}{\partial z^2}=LC\dfrac{\partial^2v}{\partial t^2},\ \ v=f^+(t-z/v_p)+f^-(t+z/v_p)$ | Ecuación de d'Alembert y su solución para señales arbitrarias (pulsos). |
+| $Z_0=\sqrt{L/C}=\dfrac{\omega L}\beta=\dfrac\beta{\omega C}=v_pL=\dfrac1{v_pC}$ | Impedancia característica (real sin pérdidas). |
+| $v_p=\dfrac\omega\beta=\dfrac1{\sqrt{LC}}=\dfrac1{\sqrt{\mu\varepsilon}}=\dfrac c{\sqrt{\varepsilon_r\mu_r}}$ | Velocidad de propagación: depende solo del dieléctrico y no hay dispersión. |
+| $\lambda=\dfrac{v_p}f=\dfrac{2\pi}\beta$ | Longitud de onda en la línea. |
+| $T=l/v_p,\ \ \beta l=2\pi l/\lambda$ | Retardo y longitud eléctrica de un tramo. |
+| $V_0^\pm=\tfrac12[V(0)\pm Z_0I(0)]$ | Amplitudes de las ondas a partir de $V$ e $I$ en $z=0$. |
+| $V(z)=V(0)\cosh\gamma z-Z_0I(0)\sinh\gamma z$, $\ I(z)=I(0)\cosh\gamma z-\dfrac{V(0)}{Z_0}\sinh\gamma z$ | Forma hiperbólica a partir de las condiciones en un extremo. |
+| $V(z)=V(0)\cos\beta z-jZ_0I(0)\sin\beta z$, $\ I(z)=I(0)\cos\beta z-j\dfrac{V(0)}{Z_0}\sin\beta z$ | Lo mismo sin pérdidas. |
+| $\begin{pmatrix}V(d)\\I(d)\end{pmatrix}=\begin{pmatrix}\cos\beta d&jZ_0\sin\beta d\\ \frac j{Z_0}\sin\beta d&\cos\beta d\end{pmatrix}\begin{pmatrix}V_L\\I_L\end{pmatrix}$ | Matriz ABCD de un tramo de longitud $d$ (da $Z_{in}=V/I$). |
+| $P=\tfrac12\mathrm{Re}\{VI^*\}$ | Potencia media que atraviesa una sección. |
+| $P=\dfrac{\lvert V_0^+\rvert^2}{2Z_0}-\dfrac{\lvert V_0^-\rvert^2}{2Z_0}=P^+-P^-$ | Potencia neta: incidente menos reflejada, constante a lo largo de la línea. |
+| $P_L=P^+(1-\lvert\Gamma_L\rvert^2),\ \ P^-/P^+=\lvert\Gamma_L\rvert^2$ | Potencia en la carga y fracción reflejada. |
+| Adaptada: $P=\dfrac{\lvert V_0^+\rvert^2}{2Z_0}=\tfrac12Z_0\lvert I_0^+\rvert^2$ | Potencia sin reflexión. |
+
+## 16. Línea con pérdidas (T3.4)
+
+| Fórmula | Explicación |
+|---|---|
+| $R$ crece con $\sqrt f$ ($R_s=1/\sigma_c\delta_s$) | Las pérdidas en los conductores aumentan con la frecuencia por el efecto pelicular. |
+| $G=\dfrac\sigma\varepsilon C=\omega C\tan\delta$ | Conductancia por pérdidas del dieléctrico. |
+| $\gamma^2=a+jb,\ \ a=RG-\omega^2LC,\ \ b=\omega(RC+LG)$ | Parte real e imaginaria de $\gamma^2$. |
+| $\alpha=\sqrt{\dfrac{\sqrt{a^2+b^2}+a}2},\ \ \beta=\sqrt{\dfrac{\sqrt{a^2+b^2}-a}2}$ | Atenuación (Np/m) y fase (rad/m) exactas. |
+| $\alpha\approx\dfrac12\left(\dfrac R{Z_0}+GZ_0\right),\ \ \beta\approx\omega\sqrt{LC}$ | Pérdidas pequeñas ($R\ll\omega L,\ G\ll\omega C$): $\alpha_c=R/2Z_0$ (conductores) y $\alpha_d=GZ_0/2$ (dieléctrico). |
+| $\alpha[\text{dB/m}]=8{,}686\,\alpha[\text{Np/m}]$ | Conversión Np–dB. |
+| $R/L=G/C\Rightarrow\alpha=R/Z_0,\ \beta=\omega\sqrt{LC},\ Z_0=\sqrt{L/C}$ | Línea sin distorsión (Heaviside): atenuación constante y $\beta$ lineal en $\omega$. |
+| $Z_0=\sqrt{\dfrac{R+j\omega L}{G+j\omega C}}$ | Impedancia característica con pérdidas (en general compleja). |
+| $Z_0\approx\sqrt{\dfrac LC}\left[1+\dfrac j2\left(\dfrac G{\omega C}-\dfrac R{\omega L}\right)\right]$ | Aproximación con pérdidas pequeñas: casi real. |
+| $v_p=\dfrac\omega\beta\approx\dfrac1{\sqrt{LC}},\ \ v_g=\dfrac{d\omega}{d\beta}$ | Velocidades de fase y de grupo; con pérdidas hay dispersión. |
+| $P^+(z)=\dfrac{\lvert V_0^+\rvert^2}{2\lvert Z_0\rvert^2}\mathrm{Re}\{Z_0\}\,e^{-2\alpha z}$ | Potencia de la onda incidente: decae como $e^{-2\alpha z}$. |
+| Pérdida entre dos puntos: $8{,}686\,\alpha\,\Delta z$ dB | Atenuación en dB de un tramo. |
+| $-\dfrac{dP}{dz}=\tfrac12\lvert I\rvert^2R+\tfrac12\lvert V\rvert^2G=2\alpha P$ | Potencia disipada por unidad de longitud. |
+| $\Gamma(d)=\Gamma_Le^{-2\gamma d}$ | El coeficiente de reflexión disminuye hacia el generador. |
+| $Z_{in}=Z_0\dfrac{Z_L+Z_0\tanh\gamma d}{Z_0+Z_L\tanh\gamma d}$ | Impedancia de entrada con pérdidas. |
+
+## 17. Ondas estacionarias y reflexión sobre una carga (T3.5 y T3.6)
+
+| Fórmula | Explicación |
+|---|---|
+| $V(d)=V_0^+e^{j\beta d}(1+\Gamma_Le^{-2j\beta d}),\ \ I(d)=\dfrac{V_0^+}{Z_0}e^{j\beta d}(1-\Gamma_Le^{-2j\beta d})$ | Tensión y corriente a una distancia $d$ de la carga. |
+| $\lvert V(d)\rvert=\lvert V_0^+\rvert\sqrt{1+\lvert\Gamma_L\rvert^2+2\lvert\Gamma_L\rvert\cos(\theta_\Gamma-2\beta d)}$ | Patrón de onda estacionaria de la tensión. |
+| $\lvert I(d)\rvert=\dfrac{\lvert V_0^+\rvert}{Z_0}\sqrt{1+\lvert\Gamma_L\rvert^2-2\lvert\Gamma_L\rvert\cos(\theta_\Gamma-2\beta d)}$ | Patrón de la corriente (máximo donde $V$ es mínima). |
+| $\lvert V\rvert_{max}=\lvert V_0^+\rvert(1+\lvert\Gamma_L\rvert),\ \ \lvert V\rvert_{min}=\lvert V_0^+\rvert(1-\lvert\Gamma_L\rvert)$ | Máximo y mínimo de la tensión. |
+| $S=\dfrac{\lvert V\rvert_{max}}{\lvert V\rvert_{min}}=\dfrac{1+\lvert\Gamma\rvert}{1-\lvert\Gamma\rvert}$ | Relación de onda estacionaria (ROE). |
+| $\lvert\Gamma\rvert=\dfrac{S-1}{S+1}$ | Módulo de $\Gamma$ a partir de la ROE. |
+| Máximos consecutivos a $\lambda/2$; máximo–mínimo a $\lambda/4$ | Geometría del patrón. |
+| Cortocircuito: $V=2jV_0^+\sin\beta d,\ I=\dfrac{2V_0^+}{Z_0}\cos\beta d$ | Onda estacionaria pura con $\Gamma_L=-1$. |
+| Abierto: $V=2V_0^+\cos\beta d,\ I=\dfrac{2jV_0^+}{Z_0}\sin\beta d$ | Onda estacionaria pura con $\Gamma_L=+1$. |
+| $\Gamma_L=\dfrac{V_0^-}{V_0^+}=\dfrac{Z_L-Z_0}{Z_L+Z_0}$ | Coeficiente de reflexión de la carga. |
+| $Z_L=Z_0\dfrac{1+\Gamma_L}{1-\Gamma_L}$ | Carga a partir de $\Gamma_L$. |
+| $\Gamma(d)=\Gamma_Le^{-2j\beta d}$ | Reflexión a una distancia $d$: gira $-2\beta d$ hacia el generador. |
+| $\Gamma_L=0$ (adaptada), $-1$ (cortocircuito), $+1$ (abierto); resistiva: $S=R_L/Z_0$ si $R_L>Z_0$, $S=Z_0/R_L$ si $R_L<Z_0$ | Casos particulares. |
+| $RL=-20\log\lvert\Gamma_L\rvert$ dB | Pérdida de retorno. |
+| $ML=-10\log(1-\lvert\Gamma_L\rvert^2)$ dB | Pérdida por desajuste (potencia incidente que no llega a la carga). |
+| $d_{max}=\dfrac\lambda{4\pi}\theta_\Gamma\ (+n\lambda/2),\ \ d_{min}=\dfrac\lambda{4\pi}(\theta_\Gamma+\pi)\ (+n\lambda/2)$ | Posición de máximos y mínimos de $\lvert V\rvert$ desde la carga ($-\pi<\theta_\Gamma\le\pi$; si $\theta_\Gamma<0$ el primer máximo es $+\lambda/2$). |
+| $Z(d_{max})=Z_0S,\ \ Z(d_{min})=Z_0/S$ | Impedancia (real) en los extremos del patrón. |
+| $Z_L=Z_0\dfrac{1-jS\tan\beta d_{min}}{S-j\tan\beta d_{min}}$ | Carga desconocida a partir de $S$ y de la distancia del primer mínimo. |
+| $Z_{in}(d)=Z_0\dfrac{Z_L+jZ_0\tan\beta d}{Z_0+jZ_L\tan\beta d}=Z_0\dfrac{1+\Gamma(d)}{1-\Gamma(d)}$ | Impedancia de entrada: transforma la carga a lo largo de la línea. |
+| $d=n\lambda/2\Rightarrow Z_{in}=Z_L;\ \ d=(2n+1)\lambda/4\Rightarrow Z_{in}=Z_0^2/Z_L$ | Línea de media onda (repite la carga) y de cuarto de onda (inversor). |
+| Cortocircuito: $Z_{in}=jZ_0\tan\beta d$; abierto: $Z_{in}=-jZ_0\cot\beta d$ | Impedancia de líneas terminadas en cortocircuito o abierto (reactivas). |
+| $V_0^+=\dfrac{V_L+Z_0I_L}2,\ \ V_0^-=\dfrac{V_L-Z_0I_L}2=\Gamma_LV_0^+$ | Amplitudes a partir de la tensión y corriente en la carga. |
+| $V_{in}=V_g\dfrac{Z_{in}}{Z_{in}+Z_g}$ | Tensión en la entrada (divisor con la impedancia del generador). |
+| $V_0^+=\dfrac{V_{in}e^{-j\beta l}}{1+\Gamma_Le^{-2j\beta l}}=V_g\dfrac{Z_0}{Z_0+Z_g}\dfrac{e^{-j\beta l}}{1-\Gamma_g\Gamma_Le^{-2j\beta l}}$ | $V_0^+$ a partir del generador y de la línea (con pérdidas: $j\beta\to\gamma$). |
+| $\Gamma_g=\dfrac{Z_g-Z_0}{Z_g+Z_0}$ | Reflexión en el generador. |
+| $Z_g=Z_0\Rightarrow V_0^+=\dfrac{V_g}2e^{-j\beta l}$ | Generador adaptado: la mitad de la tensión y sin rebotes múltiples. |
+
+## 18. Adaptación y carta de Smith (T3.7 y T3.8)
+
+| Fórmula | Explicación |
+|---|---|
+| $Z_T=\sqrt{Z_0Z_L},\ \ l=\lambda_T/4$ | Transformador de cuarto de onda para una carga real. |
+| $Z_T=Z_0\sqrt S$ (en un máximo) $,\ \ Z_T=Z_0/\sqrt S$ (en un mínimo) | Carga compleja: se coloca el transformador donde la impedancia es real. |
+| $\lvert\Gamma\rvert=\left[1+\dfrac{4Z_0Z_L}{(Z_L-Z_0)^2}\sec^2\theta\right]^{-1/2}$ | Respuesta en frecuencia del transformador ($\theta=\beta l=\pi/2$ en la frecuencia de diseño): banda estrecha. |
+| $Y_{sc}=-jY_0\cot\beta l,\ \ Y_{oc}=+jY_0\tan\beta l$ | Admitancia (susceptancia pura) de un stub en cortocircuito o abierto. |
+| $y(d)=\dfrac{y_L+jt}{1+jy_Lt},\ \ t=\tan\beta d$ | Admitancia normalizada a una distancia $d$ de la carga (se impone $\mathrm{Re}\,y=1$). |
+| $t=\dfrac{X_L\pm\sqrt{R_L[(Z_0-R_L)^2+X_L^2]/Z_0}}{R_L-Z_0}\ (R_L\ne Z_0),\ \ t=-\dfrac{X_L}{2Z_0}\ (R_L=Z_0)$ | Posición del stub (dos soluciones) para $Z_L=R_L+jX_L$. |
+| $y(d)=1+jb\Rightarrow$ stub con $-jb$ | El stub debe anular la susceptancia. |
+| Cortocircuito: $\tan\beta l=1/b$; abierto: $\tan\beta l=-b$ | Longitud del stub (si $l<0$, sumar $\lambda/2$). |
+| $z=\dfrac Z{Z_0}=r+jx=\dfrac{1+\Gamma}{1-\Gamma},\ \ \Gamma=\dfrac{z-1}{z+1}$ | Correspondencia impedancia–$\Gamma$ de la carta de Smith. |
+| Circunferencias de $r$ constante: centro $\left(\frac r{1+r},0\right)$, radio $\frac1{1+r}$ | Familia de resistencia constante. |
+| Circunferencias de $x$ constante: centro $\left(1,\frac1x\right)$, radio $\frac1{\lvert x\rvert}$ | Familia de reactancia constante. |
+| $S=r$ en el corte del círculo de ROE con el eje real derecho | Lectura de la ROE. |
+| Hacia el generador: giro horario de $2\beta d=4\pi d/\lambda$; vuelta completa $=\lambda/2$ | Desplazamiento sobre la línea (antihorario hacia la carga). |
+| $y=1/z$: punto diametralmente opuesto ($\Gamma\to-\Gamma$) | Paso de impedancia a admitancia ($\lambda/4$). |
+| Abierto $\Gamma=+1$ (derecha); cortocircuito $\Gamma=-1$ (izquierda); centro: adaptación | Puntos de referencia de la carta. |
+
+## 19. Pulsos en la línea (T3.9)
+
+| Fórmula | Explicación |
+|---|---|
+| $\Gamma_L=\dfrac{R_L-Z_0}{R_L+Z_0},\ \ \Gamma_g=\dfrac{R_g-Z_0}{R_g+Z_0}$ | Reflexión de la tensión en la carga y en el generador (resistivos). |
+| $I^-=-\Gamma I^+$ | La corriente se refleja con signo contrario a la tensión. |
+| $V_1^+=V_g\dfrac{Z_0}{Z_0+R_g}$ | Primera onda lanzada por el generador en $t=0$. |
+| $T=l/v_p$ | Tiempo de tránsito: los ecos llegan a la carga en $T$ y vuelven al generador en $2T$. |
+| $V_L=V_1^+(1+\Gamma_L)\left[1+\Gamma_g\Gamma_L+(\Gamma_g\Gamma_L)^2+\dots\right]$ | Tensión en la carga como suma de rebotes. |
+| $V_L(\infty)=\dfrac{V_1^+(1+\Gamma_L)}{1-\Gamma_g\Gamma_L}=V_g\dfrac{R_L}{R_g+R_L}$ | Régimen estacionario (divisor de continua). |
+| $R_g=Z_0\Rightarrow V_L=V_1^+(1+\Gamma_L)$ desde $t=T$ | Generador adaptado: un solo eco. |
+| Carga $C$: $V_L=2V_1^+(1-e^{-t'/\tau}),\ \tau=Z_0C$ | Respuesta con generador adaptado ($t'=t-T$). |
+| Carga $L$: $V_L=2V_1^+e^{-t'/\tau},\ \tau=L/Z_0$ | Respuesta con bobina. |
+| Pulso $=V_g[u(t)-u(t-t_p)]$; los ecos no se solapan si $2T>t_p$ | Pulso como suma de dos escalones. |
+| $d=v_pt_e/2$ | Reflectometría en el dominio del tiempo: distancia a la discontinuidad. |
