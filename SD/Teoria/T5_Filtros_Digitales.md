@@ -88,7 +88,7 @@ La circunferencia unidad se puede ver como **"una carretera" que discurre por $H
 
 **Ejemplo de la diapositiva** (mapa de $\lvert H(z)\rvert$ sobre el plano complejo, con la circunferencia unidad en rojo, y respuesta resultante):
 
-![Mapa del módulo de H(z) en el plano Z, y respuesta en módulo (dB) y en fase (grados)](T5_Filtros_Digitales_img/fig02_polos_ceros_modulo_fase.png)
+![Mapa del módulo de H(z) en el plano Z, y respuesta en módulo (dB) y en fase (grados)](fig02_polos_ceros_modulo_fase.png)
 
 Lectura de la figura:
 
@@ -105,7 +105,7 @@ $$\boxed{\lvert H(z)\rvert=G\,\frac{\lvert z-z_0\rvert\,\lvert z-z_1\rvert\cdots
 
 **La magnitud en un punto $z$ cualquiera viene dada por el producto de las distancias a los ceros dividido por el producto de las distancias a los polos.**
 
-![Distancias de un punto z de la circunferencia a los ceros (q1, q2) y a los polos (p1, p2)](T5_Filtros_Digitales_img/fig03_distancias_modulo.png)
+![Distancias de un punto z de la circunferencia a los ceros (q1, q2) y a los polos (p1, p2)](fig03_distancias_modulo.png)
 
 En la figura, para el punto $z$ marcado: $\lvert H(z)\rvert=G\dfrac{d_1\,d_2}{d_3\,d_4}$, con $d_1,d_2$ las distancias a los ceros $q_1,q_2$ y $d_3,d_4$ las distancias a los polos $p_1,p_2$.
 
@@ -117,7 +117,7 @@ $$\boxed{\arg H(z)=\Big(\arg(z-z_0)+\dots+\arg(z-z_M)\Big)-\Big(\arg(z-p_0)+\dot
 
 **La fase en un punto $z$ es la suma de las fases (ángulos) _desde_ los ceros menos las fases _desde_ los polos.** Cada ángulo $\theta_k$ es el que forma, con la horizontal, el vector que va **del cero (o polo) al punto $z$**.
 
-![Ángulos θ1 … θ4 de los vectores desde los ceros y polos hasta el punto z](T5_Filtros_Digitales_img/fig04_angulos_fase.png)
+![Ángulos θ1 … θ4 de los vectores desde los ceros y polos hasta el punto z](fig04_angulos_fase.png)
 
 > 📝 Si $G>0$ no aporta fase; si $G<0$ añade $\pi$.
 
@@ -147,7 +147,7 @@ Es la razón teórica de que un sistema causal no pueda tener una banda de recha
 
 En la práctica los filtros cuentan con un **ancho de banda de transición** y un **rizado** en las bandas de paso y de supresión:
 
-![Máscara de un filtro paso bajo real: banda de paso, de transición y de rechazo](T5_Filtros_Digitales_img/fig01_mascara_filtro_practico.png)
+![Máscara de un filtro paso bajo real: banda de paso, de transición y de rechazo](fig01_mascara_filtro_practico.png)
 
 | Elemento | Significado |
 |---|---|
@@ -251,7 +251,7 @@ $$h(n)=G\,r^{n}\,\frac{\sin\big((n+1)\omega_0\big)}{\sin\omega_0}\,u(n)$$
 
 - 📝 **Ganancia unidad en el pico:** $G=(1-r)\sqrt{1-2r\cos2\omega_0+r^2}$. Con $r=0.9$ y $\omega_0=\pi/4$, $G\approx0.1345$; $h(0)=0.1345$, $h(1)=0.171$ (el máximo de la figura).
 
-![Resonador con r = 0.9 y ω0 = π/4: diagrama de polos y ceros, módulo, fase y respuesta impulsiva](T5_Filtros_Digitales_img/fig05_resonador.png)
+![Resonador con r = 0.9 y ω0 = π/4: diagrama de polos y ceros, módulo, fase y respuesta impulsiva](fig05_resonador.png)
 
 **Lectura de la figura:** el diagrama muestra el par de polos en $0.9e^{\pm j\pi/4}$ y el cero doble en el origen (el "2"); el módulo tiene un **pico de 1 en $\omega=0.25\pi$** (en la figura el eje va de 0 a 1 en unidades de $\pi$); la fase cae bruscamente alrededor de $\omega_0$; la respuesta impulsiva es una **sinusoide amortiguada** que se apaga con $0.9^n$.
 
@@ -275,7 +275,7 @@ $$H(z)=G\,\frac{\left(1-e^{j\omega_0}z^{-1}\right)\left(1-e^{-j\omega_0}z^{-1}\r
 - **Anchura de la ranura** a $-3$ dB $\approx2(1-r)$ rad (más estrecha cuanto más cerca de 1 está $r$).
 - 📝 **Ganancia:** $G=\dfrac{1-2r\cos\omega_0+r^2}{2-2\cos\omega_0}$ da $\lvert H(0)\rvert=1$ ($G\approx0.92$ para $r=0.9$, $\omega_0=\pi/4$).
 
-![Filtro ranura con r = 0.9 y ω0 = π/4](T5_Filtros_Digitales_img/fig06_filtro_ranura.png)
+![Filtro ranura con r = 0.9 y ω0 = π/4](fig06_filtro_ranura.png)
 
 **Lectura de la figura:** los ceros (○) están sobre la circunferencia y los polos (×) justo detrás, al mismo ángulo; el módulo es $\approx1$ en casi todo el eje y presenta un **nulo estrecho en $\omega=0.25\pi$**; la fase tiene un salto en esa frecuencia; la respuesta impulsiva es $\approx\delta(n)$ más una pequeña cola oscilante que decae.
 
@@ -289,7 +289,7 @@ $$H(z)=\frac{\prod_{k=1}^{M}\left(1-e^{j\omega_k}z^{-1}\right)}{\prod_{k=1}^{M}\
 
 Es un notch replicado en $M$ frecuencias $\omega_k$: la respuesta tiene **nulos periódicos** (como los dientes de un peine).
 
-![Filtro peine con r = 0.9 y M = 10 pares polo/cero](T5_Filtros_Digitales_img/fig07_filtro_peine.png)
+![Filtro peine con r = 0.9 y M = 10 pares polo/cero](fig07_filtro_peine.png)
 
 > 📝 **Forma cerrada del ejemplo de la figura** (deducida de ella y comprobada): los 10 ceros y polos están en $\omega_k=(2k-1)\pi/10$ (ángulos 18°, 54°, 90°, 126°, 162° y sus conjugados), las raíces décimas de $-1$. El producto se simplifica:
 >
@@ -306,7 +306,7 @@ Es un notch replicado en $M$ frecuencias $\omega_k$: la respuesta tiene **nulos 
 
 **Regla:** a cada **polo $z=a$** le corresponde un **cero $z=\dfrac1a$** (el recíproco; para polos complejos, el recíproco conjugado $1/p^*$).
 
-![Filtro paso todo: polos 0.5 y 0.4±0.6j, ceros en sus recíprocos; módulo 1; fase](T5_Filtros_Digitales_img/fig08_filtro_paso_todo.png)
+![Filtro paso todo: polos 0.5 y 0.4±0.6j, ceros en sus recíprocos; módulo 1; fase](fig08_filtro_paso_todo.png)
 
 En la figura, los polos (×) están en $0.5$ y $0.4\pm0.6j$ (dentro de la circunferencia) y los ceros (○) en $2$ y $\approx0.77\pm1.15j$ (los inversos, fuera): el **módulo es exactamente 1** y solo cambia la **fase**.
 
@@ -378,7 +378,7 @@ $$1+a_1z^{-1}+a_2z^{-2}=(1-p_1z^{-1})(1-p_2z^{-1})$$
 
 Identificando coeficientes: $\boxed{a_2=p_1p_2,\qquad a_1=-(p_1+p_2)}$.
 
-![Triángulo de estabilidad en el plano (a1, a2)](T5_Filtros_Digitales_img/fig09_triangulo_estabilidad.png)
+![Triángulo de estabilidad en el plano (a1, a2)](fig09_triangulo_estabilidad.png)
 
 **El sistema es estable ⇔ $(a_1,a_2)$ está dentro del triángulo** de vértices $(-2,1)$, $(0,-1)$ y $(2,1)$, limitado por tres rectas:
 
