@@ -26,7 +26,7 @@ Resumen completo y explicado del tema «Canales de comunicación y fuentes — M
 
 Un **sistema de transmisión** lleva información desde una fuente hasta un destino:
 
-![Sistema de transmisión](T5_Modelos_de_Canal_img/01_sistema_transmision.jpg)
+![Sistema de transmisión](01_sistema_transmision.jpg)
 
 - **Fuente de información** → **Transmisor** → **Canal** → **Receptor** → **Destino**.
 - Sobre el canal actúan **perturbaciones** (ruido, desvanecimiento, interferencias…).
@@ -44,7 +44,7 @@ Un **modelo de canal** es una descripción **probabilística** de lo que le ocur
 
 El **mismo** sistema de comunicaciones digitales puede verse como tres canales anidados:
 
-![Canales anidados](T5_Modelos_de_Canal_img/10_canales_anidados.jpg)
+![Canales anidados](10_canales_anidados.jpg)
 
 | Canal | Qué incluye | Entrada → salida | Modelo |
 |---|---|---|---|
@@ -124,7 +124,7 @@ Medida de la **calidad** de la señal recibida: cociente entre la potencia de la
 
 $$\boxed{\text{SNR}=\frac{\sigma_X^2}{\sigma_N^2}\qquad\text{SNR(dB)}=10\log_{10}\frac{\sigma_X^2}{\sigma_N^2}}$$
 
-![Efecto de la SNR](T5_Modelos_de_Canal_img/g4_snr_ejemplo.png)
+![Efecto de la SNR](g4_snr_ejemplo.png)
 
 *Figura g4: una sinusoide $X$ (negro) y $Y=X+N$ (naranja) para tres SNR. Con 20 dB apenas se aprecia el ruido; con 0 dB (potencia de ruido igual a la de señal) la señal casi se pierde.*
 
@@ -144,7 +144,7 @@ Reglas rápidas: **+3 dB ≈ ×2**, **+10 dB = ×10**, **−3 dB ≈ ×½**. Par
 
 El **canal Rayleigh** es un modelo de canal **radio** que caracteriza el efecto **multitrayectoria** (*multipath*), que genera **desvanecimientos** (*fading*). Ejemplo típico: comunicaciones móviles en entornos urbanos.
 
-![Multitrayecto](T5_Modelos_de_Canal_img/02_multitrayecto.jpg)
+![Multitrayecto](02_multitrayecto.jpg)
 
 - La señal modulada **no** encuentra un camino directo del emisor al receptor (sin línea de visión): llega a través de **múltiples caminos** (reflejos en edificios, etc.).
 - Cada versión recorre una distancia distinta, así que llega con **distinto retardo, amplitud y fase**.
@@ -194,7 +194,7 @@ $$\boxed{f_R(r)=\frac{r}{\sigma^2}\,e^{-\frac{r^2}{2\sigma^2}},\qquad r\ge0}$$
 
 La fase $\Psi$ es **uniforme en $[0,2\pi]$**: $f_\Psi(\psi)=\frac1{2\pi}$.
 
-![pdf de Rayleigh para varios σ](T5_Modelos_de_Canal_img/03_pdf_rayleigh_slide.jpg)
+![pdf de Rayleigh para varios σ](03_pdf_rayleigh_slide.jpg)
 
 *Figura: pdf de Rayleigh para $\sigma=0.5,1,2,3,4$. Al aumentar $\sigma$, la curva se ensancha y su máximo baja (el máximo está en $r=\sigma$ y vale $e^{-1/2}/\sigma\approx0.607/\sigma$).*
 
@@ -210,7 +210,7 @@ $$f_{R,\Psi}(r,\psi)=\frac{r}{2\pi\sigma^2}\,e^{-\frac{r^2}{2\sigma^2}}=\underbr
 
 La densidad **se factoriza**: $R$ y $\Psi$ son **independientes**, $R$ es Rayleigh y $\Psi$ es uniforme.
 
-![Simulación de multitrayecto](T5_Modelos_de_Canal_img/g1_fading_simulado.png)
+![Simulación de multitrayecto](g1_fading_simulado.png)
 
 *Figura g1 (simulación con $N=30$ trayectos de amplitud y fase aleatorias): (izquierda) $(Y_I,Y_Q)$ forman una nube gaussiana circular; (centro) el histograma de la envolvente $R$ coincide con la pdf de Rayleigh; (derecha) la fase es uniforme.*
 
@@ -241,7 +241,7 @@ Muchos sistemas trasladan una señal de **banda base** $X(t)$ a una **portadora*
 
 $$\boxed{Y(t)=X(t)\,A_0\cos(\omega_0t)}$$
 
-![Modulador y demodulador](T5_Modelos_de_Canal_img/04_modulador_demodulador.jpg)
+![Modulador y demodulador](04_modulador_demodulador.jpg)
 
 *Figura: (a) el modulador combina la señal mensaje con una onda portadora sinusoidal y da la onda modulada; (b) el demodulador, a partir de la salida del canal, estima la señal mensaje.*
 
@@ -253,7 +253,7 @@ Resultado del tema anterior (respuesta de un multiplicador a una señal aleatori
 
 $$A[R_Y(t,t+\tau)]=\frac{A_0^2}{2}R_X(\tau)\cos(\omega_0\tau)\qquad\Longrightarrow\qquad\boxed{S_Y(\omega)=\frac{A_0^2}{4}\Big[S_X(\omega-\omega_0)+S_X(\omega+\omega_0)\Big]}$$
 
-![Espectro del multiplicador](T5_Modelos_de_Canal_img/05_espectro_multiplicador.jpg)
+![Espectro del multiplicador](05_espectro_multiplicador.jpg)
 
 *Figura: (a) PSD de $X(t)$, paso bajo con $S_{XX}(\omega)=0$ para $\lvert\omega\rvert>W/2$; (b) PSD de $Y(t)$: **dos réplicas** centradas en $\pm\omega_0$, de altura $\frac{A_0^2}{4}S_{XX}(0)$ y ancho total $W$.*
 
@@ -278,7 +278,7 @@ Si el receptor demodula **coherentemente** (multiplica por $\cos\omega_0t$ y fil
 
 ### 4.1 Modulación digital: la cadena completa
 
-![Cadena de comunicación digital](T5_Modelos_de_Canal_img/06_modulacion_digital_cadena.jpg)
+![Cadena de comunicación digital](06_modulacion_digital_cadena.jpg)
 
 | Bloque | Qué hace |
 |---|---|
@@ -302,19 +302,19 @@ Si el receptor demodula **coherentemente** (multiplica por $\cos\omega_0t$ y fil
 
 $$s_i(t)=a_i\cos(2\pi f_ct),\qquad0\le t\le T$$
 
-![Constelación 4-PAM](T5_Modelos_de_Canal_img/07_constelacion_4pam.jpg)
+![Constelación 4-PAM](07_constelacion_4pam.jpg)
 
 *Constelación 4-PAM con codificación Gray: $a_0=-3\to01$, $a_1=-1\to00$, $a_2=+1\to10$, $a_3=+3\to11$.*
 
 **Codificación Gray:** los símbolos **vecinos** difieren en **un solo bit** (01–00–10–11). Es la clave para que un error entre símbolos adyacentes solo corrompa 1 bit (ver §4.8).
 
-![Formas de onda PAM](T5_Modelos_de_Canal_img/08_formas_onda_pam.jpg)
+![Formas de onda PAM](08_formas_onda_pam.jpg)
 
 *Forma de onda $s(t)$: en cada intervalo $T$ se transmite una sinusoide cuya amplitud depende del símbolo (líneas discontinuas: la amplitud $a_i$).*
 
 ### 4.3 Canal discreto sin memoria (DMC)
 
-![DMC](T5_Modelos_de_Canal_img/09_dmc.jpg)
+![DMC](09_dmc.jpg)
 
 Un **canal discreto sin memoria** (*Discrete Memoryless Channel*) es un modelo estadístico con una **entrada** $X$ (v.a.) y una **salida** $Y$ (v.a.). En cada instante acepta un símbolo $x_i$ de un alfabeto de entrada $\{x_i,\;i=1,\dots,M\}$ y emite un símbolo $y_j$ de un alfabeto de salida $\{y_j,\;j=1,\dots,L\}$.
 
@@ -342,7 +342,7 @@ $$P=\begin{pmatrix}p_{Y|X}(y_0|x_0)&p_{Y|X}(y_1|x_0)&\cdots&p_{Y|X}(y_{L-1}|x_0)
 
 Un **canal digital** es un caso particular de DMC en el que el **alfabeto de entrada es el mismo que el de salida** y coincide con el alfabeto de símbolos de la **constelación** $\{a_i,\;i=0,\dots,M-1\}$.
 
-![Canal digital](T5_Modelos_de_Canal_img/10_canales_anidados.jpg)
+![Canal digital](10_canales_anidados.jpg)
 
 Corresponde a englobar **modulador, canal gaussiano, demodulador y decisor** (zona «Canal digital» de la figura). Entre el codificador y el decodificador, el canal digital transforma $A[n]$ en $\hat A[n]$.
 
@@ -366,7 +366,7 @@ es decir, la **probabilidad de decidir que el símbolo transmitido fue $a_j$ cua
 
 $$\frac{g}{\sqrt{N_0/2}}=\sqrt{\frac{E_s/5}{N_0/2}}=\sqrt{\frac25\frac{E_s}{N_0}}\equiv z$$
 
-![Decisión 4-PAM](T5_Modelos_de_Canal_img/g2_decision_4pam.png)
+![Decisión 4-PAM](g2_decision_4pam.png)
 
 *Figura g2: se transmite $a_1$ (fila 2 de la matriz). La zona verde es la decisión correcta ($1-2Q(z)$); azul y rojo son los errores a los símbolos vecinos ($Q(z)$ y $Q(z)-Q(3z)$); la zona morada, error a dos niveles de distancia ($Q(3z)$).*
 
@@ -407,7 +407,7 @@ Caso particular de DMC con **$M=L=2$** y matriz **simétrica**:
 
 $$P=\begin{pmatrix}p_{Y|X}(y_0|x_0)&p_{Y|X}(y_1|x_0)\\p_{Y|X}(y_0|x_1)&p_{Y|X}(y_1|x_1)\end{pmatrix}=\begin{pmatrix}1-p&p\\p&1-p\end{pmatrix}$$
 
-![BSC](T5_Modelos_de_Canal_img/11_bsc.jpg)
+![BSC](11_bsc.jpg)
 
 - $p$ es la **probabilidad de cruce** (*crossover*): probabilidad de que el bit llegue **cambiado**.
 - Los errores son **igual de probables** en las dos direcciones ($0\to1$ y $1\to0$).
@@ -453,7 +453,7 @@ $$\text{BER}=\frac{6Q(z)+4Q(3z)-2Q(5z)}{8}=\frac34Q(z)+\frac12Q(3z)-\frac14Q(5z)
 
 **A SNR alta**, el primer término domina: $\text{BER}\approx\tfrac34Q(z)=\tfrac{P_s}{2}$, es decir, **un error de símbolo suele corromper un único bit** (gracias a Gray).
 
-![BER de 4-PAM](T5_Modelos_de_Canal_img/g3_ber_4pam.png)
+![BER de 4-PAM](g3_ber_4pam.png)
 
 *Figura g3: BER frente a $E_b/N_0$ (dB). Los dos puntos rojos son los de las diapositivas.*
 
